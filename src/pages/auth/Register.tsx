@@ -1,4 +1,3 @@
-// src/pages/Register.tsx
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -21,17 +20,49 @@ export default function Register() {
     e.preventDefault();
     setError('');
 
-    const newUser = {
-      ID: id,
-      FirstName: firstName,
-      LastName: lastName,
-      Email: email,
-      Cell: phone,
-      BirthDate: birthDate,
-      MedicalInsurance: medicalInsurance
-    };
-
+    // שלב 1: שליחת קוד אימות לפלאפון (יודפס בקונסול)
     try {
+      const sendRes = await fetch('http://localhost:5281/Auth/SendCode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(phone),
+      });
+
+      if (!sendRes.ok) {
+        setError('שליחת קוד אימות נכשלה');
+        return;
+      }
+
+      // שלב 2: בקשת קוד מהמשתמש
+      const code = prompt('קוד אימות נשלח לטלפון (בדוק בקונסול). אנא הזן את הקוד:');
+      if (!code) {
+        setError('יש להזין קוד אימות');
+        return;
+      }
+
+      // שלב 3: אימות הקוד מול השרת
+      const verifyRes = await fetch('http://localhost:5281/Auth/VerifyCode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, code }),
+      });
+
+      if (!verifyRes.ok) {
+        setError('קוד אימות שגוי');
+        return;
+      }
+
+      // שלב 4: הרשמה בפועל
+      const newUser = {
+        ID: id,
+        FirstName: firstName,
+        LastName: lastName,
+        Email: email,
+        Cell: phone,
+        BirthDate: birthDate,
+        MedicalInsurance: medicalInsurance
+      };
+
       const res = await fetch('http://localhost:5281/Gymnast/NewGymnast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -39,7 +70,7 @@ export default function Register() {
       });
 
       if (res.ok) {
-        // שליפת המשתמש מהשרת לאחר ההרשמה
+        // שליפת המשתמש
         const getRes = await fetch(`http://localhost:5281/Gymnast/GetGymnastById?id=${encodeURIComponent(id)}`);
         if (getRes.ok) {
           const userFromServer = await getRes.json();
@@ -53,7 +84,8 @@ export default function Register() {
         setError(text || 'שגיאה בהרשמה');
       }
     } catch (e) {
-      setError('שגיאה בשרת');
+      console.error(e);
+      setError('שגיאת תקשורת עם השרת');
     }
   }
 
