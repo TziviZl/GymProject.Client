@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://localhost:5281/api';  
+const BASE_URL = 'http://localhost:5281';  
 
 export const sendVerificationCode = (phone: string) =>
   axios.post(`${BASE_URL}/Auth/SendCode`, JSON.stringify(phone), {

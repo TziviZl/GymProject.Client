@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://localhost:5281/api'; // וודא שה-BASE_URL נכון עבור הסביבה שלך
+const BASE_URL = 'http://localhost:5281/api'; // וודא שה-BASE_URL נכון עבור הסביבה שלך
 
 // ממשקים (ניתן להגדיר בקובץ נפרד, לדוגמה: types.ts)
 export interface MTrainer {

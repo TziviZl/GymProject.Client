@@ -1,140 +1,144 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { newGymnast, MGymnast ,addMembershipType, MembershipTypeEnum} from '../../api/gymnastApi';
+import { sendVerificationCode, verifyCode } from '../../api/authApi';
+import { useAuth } from '../../context/AuthContext';
 
-export default function Register() {
-  const location = useLocation();
-  const navigate = useNavigate();
+export default function Register() { 
+const location = useLocation(); 
+const navigate = useNavigate(); 
+const { login } = useAuth(); 
 
-  const initialId = location.state?.id || '';
-  const [id] = useState(initialId);
+const initialId = location.state?.id || ''; 
+const [id, setId] = useState(initialId); 
+const [firstName, setFirstName] = useState(''); 
+const [lastName, setLastName] = useState(''); 
+const [email, setEmail] = useState(''); 
+const [phone, setPhone] = useState(''); 
+const [birthDate, setBirthDate] = useState(''); 
+const [medicalInsurance, setMedicalInsurance] = useState(''); 
+const membershipOptions = Object.entries(MembershipTypeEnum) 
+.filter(([key]) => isNaN(Number(key))) 
+.map(([key, value]) => ({ label: key, value })); 
+const [membershipType, setMembershipType] = useState<MembershipTypeEnum | null>(MembershipTypeEnum.monthly_Standard); 
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [birthDate, setBirthDate] = useState('');
-  const [medicalInsurance, setMedicalInsurance] = useState('');
-  const [error, setError] = useState('');
+const [error, setError] = useState(''); 
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError('');
+useEffect(() => { 
+if (location.state?.id) { 
+setId(location.state.id); 
+} 
+}, [location.state?.id]); 
 
-    // שלב 1: שליחת קוד אימות לפלאפון (יודפס בקונסול)
-    try {
-      const sendRes = await fetch('http://localhost:5281/Auth/SendCode', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(phone),
-      });
+async function handleSubmit(e: React.FormEvent) {
+e.preventDefault();
+setError('');
 
-      if (!sendRes.ok) {
-        setError('שליחת קוד אימות נכשלה');
-        return;
-      }
+try {
+await sendVerificationCode(phone);
+const code = prompt('A verification code has been sent to your phone. Please enter the code:');
+if (!code) {
+setError('A verification code must be entered');
+return;
+}
 
-      // שלב 2: בקשת קוד מהמשתמש
-      const code = prompt('קוד אימות נשלח לטלפון (בדוק בקונסול). אנא הזן את הקוד:');
-      if (!code) {
-        setError('יש להזין קוד אימות');
-        return;
-      }
+await verifyCode(phone, code);
 
-      // שלב 3: אימות הקוד מול השרת
-      const verifyRes = await fetch('http://localhost:5281/Auth/VerifyCode', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, code }),
-      });
+const newUser: MGymnast = {
+id,
+firstName,
+lastName,
+email,
+cell: phone,
+birthDate: birthDate,
+medicalInsurance
+};
 
-      if (!verifyRes.ok) {
-        setError('קוד אימות שגוי');
-        return;
-      }
+console.log("newUser:", newUser);
 
-      // שלב 4: הרשמה בפועל
-      const newUser = {
-        ID: id,
-        FirstName: firstName,
-        LastName: lastName,
-        Email: email,
-        Cell: phone,
-        BirthDate: birthDate,
-        MedicalInsurance: medicalInsurance
-      };
+const res = await newGymnast(newUser);
+if (res.status === 200 || res.status === 201) {
+login(id); // ⬅ Save in Context
+if (membershipType) {
+await addMembershipType(membershipType, id);
+}
+alert('Registration Successfully');
+navigate('/MyProfile');
+} else {
+const text = res.data?.message || res.statusText || 'Registration Error';
+setError(text);
+}
+} catch (e: any) {
+console.error(e.response?.data || e.message || e);
+setError(e.response?.data || 'Communication error or incorrect data');
+}
+}
 
-      const res = await fetch('http://localhost:5281/Gymnast/NewGymnast', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newUser),
-      });
+return (
+<div>
+<h1>Register</h1>
+<form onSubmit={handleSubmit}>
+{initialId ? <p>ID: {id}</p> : (
+<div>
+<label>
+ID:
+<input type="text" value={id} onChange={e => setId(e.target.value)} required />
+</label><br />
+</div>
+)}
 
-      if (res.ok) {
-        // שליפת המשתמש
-        const getRes = await fetch(`http://localhost:5281/Gymnast/GetGymnastById?id=${encodeURIComponent(id)}`);
-        if (getRes.ok) {
-          const userFromServer = await getRes.json();
-          alert('הרשמה בוצעה בהצלחה');
-          navigate('/MyProfile', { state: { user: userFromServer } });
-        } else {
-          setError('ההרשמה הצליחה אך לא ניתן היה להביא את פרטי המשתמש מהשרת');
-        }
-      } else {
-        const text = await res.text();
-        setError(text || 'שגיאה בהרשמה');
-      }
-    } catch (e) {
-      console.error(e);
-      setError('שגיאת תקשורת עם השרת');
-    }
-  }
+<label>
+First name:
+<input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} required />
+</label><br />
 
-  return (
-    <div>
-      <h1>הרשמה</h1>
-      <form onSubmit={handleSubmit}>
-        <p>תעודת זהות: {id}</p>
+<label>
+Last name:
+<input type="text" value={lastName} onChange={e => setLastName(e.target.value)} required />
+</label><br />
 
-        <label>
-          שם פרטי:
-          <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} required />
-        </label>
-        <br />
+<label>
+Email:
+<input type="email" value={email} onChange={e => setEmail(e.target.value)} required /> 
+</label><br /> 
 
-        <label>
-          שם משפחה:
-          <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} required />
-        </label>
-        <br />
+<label> 
+phone: 
+<input type="tel" value={phone} onChange={e => setPhone(e.target.value)} required /> 
+</label><br /> 
 
-        <label>
-          אימייל:
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-        </label>
-        <br />
+<label> 
+date of birth: 
+<input type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} required /> 
+</label><br /> 
 
-        <label>
-          טלפון:
-          <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} required />
-        </label>
-        <br />
+<label> 
+Medical insurance: 
+<input type="text" value={medicalInsurance} onChange={e => setMedicalInsurance(e.target.value)} required /> 
+</label><br />
 
-        <label>
-          תאריך לידה:
-          <input type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} required />
-        </label>
-        <br />
 
-        <label>
-          ביטוח רפואי:
-          <input type="text" value={medicalInsurance} onChange={e => setMedicalInsurance(e.target.value)} required />
-        </label>
-        <br />
-
-        <button type="submit">הרשם</button>
-      </form>
-
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-    </div>
-  );
+<label> 
+Subscription type: 
+<select 
+value={membershipType ?? ''} 
+onChange={e => setMembershipType(Number(e.target.value))} 
+required 
+> 
+<option value="">Select subscription type</option> 
+{Object.entries(MembershipTypeEnum) 
+.filter(([key]) => isNaN(Number(key))) 
+.map(([key, value]) => ( 
+<option key={key} value={value}> 
+{key} - {value} NIS 
+</option> 
+))} 
+</select>
+</label> 
+<br /> 
+<button type="submit">Subscribe</button> 
+</form> 
+{error && <p style={{ color: 'red' }}>{error}</p>} 
+</div> 
+);
 }

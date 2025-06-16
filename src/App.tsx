@@ -3,9 +3,12 @@ import Login from "./pages/auth/Login";
 import MyProfile from "./pages/user/MyProfile";
 import Register from "./pages/auth/Register";
 import Navbar from "./components/shared/Navbar";
-import LessonsList from "./components/StudioClassCard"; // ייבוא של הקומפוננטה החדשה
+import LessonsList from "./components/LessonsTable";
+import { AuthProvider } from "./context/AuthContext";
+import HomePage from "./pages/home/Home";
 
-// קומפוננטת Layout שמכילה את ה-Navbar ו־Outlet להצגת תוכן הדף
+
+
 function Layout() {
   return (
     <>
@@ -17,20 +20,19 @@ function Layout() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* כל הדפים תחת Layout שמציג Navbar */}
-        <Route path="/" element={<Layout />}>
-          {/* דף הבית: שיעורים */}
-          <Route index element={<LessonsList />} />
-
-          {/* שאר הדפים */}
-          <Route path="Login" element={<Login />} />
-          <Route path="MyProfile" element={<MyProfile />} />
-          <Route path="Register" element={<Register />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<HomePage />} /> {/* דף הבית */}
+            <Route path="Login" element={<Login />} />
+            <Route path="Register" element={<Register />} />
+            <Route path="MyProfile" element={<MyProfile />} />
+            <Route path="lessons" element={<LessonsList />} /> {/* הועבר לכאן */}
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

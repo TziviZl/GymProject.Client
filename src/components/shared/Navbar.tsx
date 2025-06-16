@@ -1,28 +1,45 @@
-import React from "react";
-import { Link, Outlet } from "react-router-dom";
-import "../../css/layout.css"; 
-import "../../css/Class.css";
+import { useAuth } from "../../context/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
+import "../../css/layout.css";
 
+function Navbar() { 
+const { gymnastId, logout } = useAuth(); 
+const navigate = useNavigate(); 
 
-function Navbar() {
-  return (
-    <div>
-      <nav className="navbar">
-        <ul>
-          <li><Link to="/">בית</Link></li>
-          <li><Link to="/lessons">שיעורים</Link></li>
-          <li><Link to="/contact">צור קשר</Link></li>
-          <li><Link to="/blog">בלוג ספורט</Link></li>
-          <li><Link to="/Login">אזור אישי</Link></li>
-          <li><a href="#about">אודות</a></li> {/* קפיצה למטה בעמוד הבית */}
-        </ul>
-      </nav>
+const handlePersonalAreaClick = (e: React.MouseEvent) => { 
+e.preventDefault(); 
+navigate(gymnastId ? "/MyProfile" : "/Login"); 
+}; 
 
-      <main>
-        <Outlet />
-      </main>
-    </div>
-  );
+return (
+<nav className="navbar">
+<ul>
+<li><Link to="/">Home</Link></li>
+<li><Link to="/lessons">Lessons</Link></li>
+<li><Link to="/contact">Contact</Link></li>
+<li><Link to="/blog">Sports Blog</Link></li>
+
+{/* Personal Area - Always Shown */}
+<li>
+<a href="#" onClick={handlePersonalAreaClick}>Personal Area</a>
+</li>
+
+{/* Logout Button - Only If Logged In */}
+{gymnastId && (
+<li>
+<button className="logout-btn" onClick={() => {
+logout();
+navigate("/");
+}}>
+Logout
+</button>
+</li>
+)}
+
+<li><a href="#about">About</a></li>
+</ul>
+</nav>
+);
 }
 
 export default Navbar;

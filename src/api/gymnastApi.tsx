@@ -1,17 +1,16 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://localhost:5281/api'; // וודא שה-BASE_URL נכון עבור הסביבה שלך
+const BASE_URL = 'http://localhost:5281/api'; // וודא שה-BASE_URL נכון עבור הסביבה שלך
 
 // ממשקים (ניתן להגדיר בקובץ נפרד, לדוגמה: types.ts)
 export interface MGymnast {
   id: string;
   firstName: string;
   lastName: string;
-  birthDate: Date; // או Date
-  medicalInsurance: string;
   email: string;
   cell: string;
-  level?: string; 
+  birthDate: string; // <-- במקום Date
+  medicalInsurance: string;
 }
 
 export interface MViewGymnastBL {
@@ -20,20 +19,18 @@ export interface MViewGymnastBL {
   firstName: string;
   lastName: string;
 MedicalInsurance : string,
-membershipType: string;
+membershipType: MembershipTypeEnum;
 }
 
 export interface MViewStudioClasses {
-  // הגדר את השדות של M_ViewStudioClasses
+  id: number;
 name: string;
+trainerName?: string; 
 level: string;
 date: Date;
-  // ... שדות נוספים
 }
 
 export enum MembershipTypeEnum {
-  // הגדר את סוגי החברות
-  // לדוגמה:
         monthly_Standard = 300, //בחודש 8
         monthly_Pro = 500, //חופשי 
         yearly_Standard = 3000, //בחודש 8
@@ -58,7 +55,7 @@ export const newGymnast = (gymnast: MGymnast) =>
 
 export const getAllGymnasts = () => axios.get<MViewGymnastBL[]>(`${BASE_URL}/Gymnast`);
 
-export const addMembershipType = (type: string, id: string) =>
+export const addMembershipType = (type: MembershipTypeEnum, id: string) =>
   axios.put(`${BASE_URL}/Gymnast/AddMembershipType`, null, {
     params: { type, id },
   });
@@ -77,9 +74,9 @@ export const updateGymnast = (gymnast: MGymnast) =>
 export const deleteGymnast = (id: string) =>
   axios.delete(`${BASE_URL}/Gymnast/DeleteGymnast`, { params: { id } });
 
-export const addGymnastLesson = (gymnastId: string, studioClass: StudioClass) =>
-  axios.post(`${BASE_URL}/Gymnast/AddGymnastLesson`, studioClass, {
-    params: { gymnastId },
+export const addGymnastLesson = (gymnastId: string, studioClassId: number) =>
+  axios.post(`${BASE_URL}/Gymnast/AddGymnastLesson`, null, {
+    params: { gymnastId, studioClassId },
   });
 
 export const removeGymnastFromLesson = (gymnastId: string, studioClass: StudioClass) =>
