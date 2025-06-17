@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import '../../css/Login.css'; 
 
 export default function Login() { 
 const [id, setId] = useState(''); 
@@ -61,21 +62,7 @@ setError('General error, please try again');
 } 
 } 
 
-return ( 
-<div> 
-<h2>Login</h2> 
-<form onSubmit={handleSubmit}> 
-<div> 
-<label>ID:</label> 
-<input value={id} onChange={e => setId(e.target.value)} required /> 
-</div> 
-<div> 
-<label>Phone:</label> 
-<input value={phone} onChange={e => setPhone(e.target.value)} required /> 
-</div> 
-<button type="submit">Sign in</button> 
-</form> 
-{error && <div style={{ color: 'red' }}>{error}</div>} 
-</div> 
-);
+return (
+
+<div className="login-container"> <h2>Login</h2> <form onSubmit={handleSubmit}> <div> <label>ID:</label> <input type="text" value={id} onChange={e => setId(e.target.value)} required /> </div> <div> <label>Phone:</label> <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} required /> </div> <button type="submit">Sign in</button> </form> {error && <div className="error">{error}</div>} </div> );
 }

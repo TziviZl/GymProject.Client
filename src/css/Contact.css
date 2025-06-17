@@ -1,0 +1,78 @@
+.contact-container {
+  max-width: 500px;
+  margin: 80px auto;
+  padding: 2rem;
+  background-color: #1e1e1e;
+  color: #f2f2f2;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.contact-container h1 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #ff9100;
+}
+
+.contact-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.contact-container label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.95rem;
+  color: #ccc;
+}
+
+.contact-container input,
+.contact-container textarea {
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background-color: #2c2c2c;
+  color: #fff;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.contact-container input:focus,
+.contact-container textarea:focus {
+  outline: none;
+  border-color: #ff9100;
+  background-color: #333;
+}
+
+.contact-container button {
+  margin-top: 1rem;
+  padding: 0.7rem;
+  background-color: #ff9100;
+  border: none;
+  border-radius: 8px;
+  color: #000;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.contact-container button:hover {
+  background-color: #ffaa33;
+}
+
+.contact-container .error {
+  margin-top: 1rem;
+  color: #ff4c4c;
+  text-align: center;
+  font-weight: bold;
+}
+
+.contact-container .success {
+  margin-top: 1rem;
+  color: #4caf50;
+  text-align: center;
+  font-weight: bold;
+}

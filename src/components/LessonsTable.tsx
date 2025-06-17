@@ -6,13 +6,32 @@ import "../css/LessonsTable.css";
 
 const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
+function getUpcomingWeekDates(): Record<string, string> {
+  const today = new Date();
+  const sunday = new Date(today);
+  sunday.setDate(today.getDate() - today.getDay()); 
+
+  const dates: Record<string, string> = {};
+  for (let i = 0; i < 6; i++) {
+    const day = new Date(sunday);
+    day.setDate(sunday.getDate() + i);
+    dates[daysOfWeek[i]] = day.toLocaleDateString("he-IL", {
+      day: "2-digit",
+      month: "2-digit",
+    });
+  }
+  return dates;
+}
+
 export default function LessonsTable() {
   const [lessons, setLessons] = useState<MViewStudioClasses[]>([]);
   const [fullStatus, setFullStatus] = useState<Record<number, boolean>>({});
   const [loading, setLoading] = useState(false);
-  const [isFullLoading, setIsFullLoading] = useState(true); // ⬅️ חדש
+  const [isFullLoading, setIsFullLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const weekDates = getUpcomingWeekDates();
 
   useEffect(() => {
     const fetchLessons = async () => {
@@ -30,7 +49,7 @@ export default function LessonsTable() {
           })
         );
         setFullStatus(statuses);
-        setIsFullLoading(false); // ⬅️ מתי שנגמרו הבדיקות
+        setIsFullLoading(false);
       } catch (err) {
         console.error("Error loading lessons:", err);
         setError("Error loading lessons");
@@ -84,13 +103,16 @@ export default function LessonsTable() {
       <div className="lessons-list">
         {daysOfWeek.map((day) => (
           <div className="lesson-column" key={day}>
-            <h3>{day}</h3>
+            <h3>
+              {day} ({weekDates[day]})
+            </h3>
             {lessonsByDay[day]?.length ? (
               lessonsByDay[day].map((lesson, idx) => {
-                const isLessonInPast = new Date(lesson.date) < new Date();
+                const isLessonInPast =
+                  new Date(lesson.date).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0);
                 const isLessonFull = fullStatus[lesson.id];
-
                 const disabled = isLessonInPast || isLessonFull;
+
                 const buttonText = isLessonInPast
                   ? "Class Passed"
                   : isLessonFull
@@ -101,7 +123,14 @@ export default function LessonsTable() {
                   <div className="lesson-card" key={idx}>
                     <h3>{lesson.name}</h3>
                     <p>Level: {lesson.level}</p>
-                    <p>Date: {new Date(lesson.date).toLocaleDateString("he-IL")}</p>
+                    <p>
+                      Time:{" "}
+                      {new Date(lesson.date).toLocaleTimeString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                      })}
+                    </p>
                     <p>Trainer: {lesson.trainerName || "Not Specified"}</p>
                     <button
                       onClick={() => handleJoinLesson(lesson)}

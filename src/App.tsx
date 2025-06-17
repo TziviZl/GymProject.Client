@@ -6,7 +6,7 @@ import Navbar from "./components/shared/Navbar";
 import LessonsList from "./components/LessonsTable";
 import { AuthProvider } from "./context/AuthContext";
 import HomePage from "./pages/home/Home";
-
+import Contact from "../src/pages/Contact"; 
 
 
 function Layout() {
@@ -28,7 +28,8 @@ function App() {
             <Route path="Login" element={<Login />} />
             <Route path="Register" element={<Register />} />
             <Route path="MyProfile" element={<MyProfile />} />
-            <Route path="lessons" element={<LessonsList />} /> {/* הועבר לכאן */}
+            <Route path="lessons" element={<LessonsList />} /> 
+            <Route path="Contact" element={<Contact />} />
           </Route>
         </Routes>
       </BrowserRouter>
