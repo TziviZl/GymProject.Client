@@ -1,0 +1,56 @@
+.about-grid-container {
+  max-width: 1200px;
+  margin: 80px auto;
+  padding: 2rem;
+  background-color: #1e1e1e;
+  color: #f2f2f2;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.about-grid-container h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
+  color: #ff9100;
+}
+
+.about-intro {
+  text-align: center;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 3rem;
+  color: #ddd;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.about-card {
+  background-color: #2c2c2c;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.about-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.7);
+}
+
+.about-card h2 {
+  color: #ffaa33;
+  margin-bottom: 0.8rem;
+  font-size: 1.4rem;
+}
+
+.about-card p {
+  color: #ddd;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}

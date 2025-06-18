@@ -11,3 +11,21 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+/* עיצוב פס גלילה כתום */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1e1e1e; /* רקע של המסילה */
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ff9100; /* צבע כתום יפה */
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ffaa33; /* צבע כתום בהיר בהובר */
+}

@@ -18,9 +18,13 @@ export default function Register() {
   const [phone, setPhone] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [medicalInsurance, setMedicalInsurance] = useState('');
-  const [membershipType, setMembershipType] = useState<MembershipTypeEnum | null>(
-    MembershipTypeEnum.monthly_Standard
-  );
+  
+  // טען מה localStorage אם קיים, אחרת ברירת מחדל
+  const [membershipType, setMembershipType] = useState<MembershipTypeEnum | null>(() => {
+    const saved = localStorage.getItem('membershipType');
+    return saved ? Number(saved) : MembershipTypeEnum.monthly_Standard;
+  });
+  
   const [error, setError] = useState('');
 
   const membershipOptions = Object.entries(MembershipTypeEnum)
@@ -61,8 +65,10 @@ export default function Register() {
 
       if (res.status === 200 || res.status === 201) {
         login(id);
-        if (membershipType) {
+        if (membershipType !== null) {
           await addMembershipType(membershipType, id);
+          // שמור ב־localStorage
+          localStorage.setItem('membershipType', membershipType.toString());
         }
         alert('Registration Successfully');
         navigate('/MyProfile');
@@ -160,7 +166,12 @@ export default function Register() {
             id="subscription"
             className="form-select"
             value={membershipType ?? ''}
-            onChange={e => setMembershipType(Number(e.target.value))}
+            onChange={e => {
+              const val = Number(e.target.value);
+              setMembershipType(val);
+              // עדכון גם ב־localStorage מיד עם שינוי
+              localStorage.setItem('membershipType', val.toString());
+            }}
             required
           >
             <option value="">Select a subscription</option>

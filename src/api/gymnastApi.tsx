@@ -1,20 +1,21 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:5281/api'; // וודא שה-BASE_URL נכון עבור הסביבה שלך
-
-// ממשקים (ניתן להגדיר בקובץ נפרד, לדוגמה: types.ts)
+const BASE_URL = 'http://localhost:5281/api'; 
 export interface MGymnast {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
   cell: string;
-  birthDate: string; // <-- במקום Date
+  birthDate: string;
   medicalInsurance: string;
+  level?: string; 
+  memberShipType?: string; 
+  weeklyCounter?: number;
 }
 
+
 export interface MViewGymnastBL {
-  // הגדר את השדות של M_ViewGymnastBL
   id: string;
   firstName: string;
   lastName: string;
