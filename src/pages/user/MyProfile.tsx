@@ -10,6 +10,7 @@ import {
   removeGymnastFromClass,
 } from '../../api/gymnastApi';
 import { useAuth } from '../../context/AuthContext';
+import ToastMessage from '../../components/shared/ToastMessage'; 
 import '../../css/MyProfile.css';
 
 export default function MyProfile() {
@@ -21,6 +22,16 @@ export default function MyProfile() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmCancelClassId, setConfirmCancelClassId] = useState<number | null>(null);
+
+  // פונקציה להציג הודעה עם toast
+  const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
+    setMessage(msg);
+    setMessageType(type);
+    setTimeout(() => setMessage(null), 4000);
+  };
 
   useEffect(() => {
     if (!gymnastId) {
@@ -28,19 +39,19 @@ export default function MyProfile() {
       return;
     }
     getGymnastById(gymnastId)
-      .then((res) => {
+      .then(res => {
         setUser(res.data);
         setEditedUser(res.data);
       })
-      .catch(() => setMessage("We were unable to load your profile."))
+      .catch(() => showMessage("We were unable to load your profile.", 'error'))
       .finally(() => setLoading(false));
   }, [gymnastId, navigate]);
 
   useEffect(() => {
     if (!gymnastId) return;
     getGymnastLessons(gymnastId, 10)
-      .then((res) => setLessons(res.data))
-      .catch(() => setMessage("Failed to load lessons."));
+      .then(res => setLessons(res.data))
+      .catch(() => showMessage("Failed to load lessons.", 'error'));
   }, [gymnastId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,39 +68,57 @@ export default function MyProfile() {
 
       const res = await updateGymnast(dataToUpdate);
       setUser(res.data);
-      setMessage("Details updated successfully.");
+      showMessage("Details updated successfully.", 'success');
       setEditing(false);
     } catch (error: any) {
-      setMessage("Failed to save changes.");
+      showMessage("Failed to save changes.", 'error');
       console.error("Error updating user:", error);
-      console.error("Error details:", error.response?.data || error.message);
     }
   };
 
-  const handleCancelLesson = async (classId: number) => {
-    if (!gymnastId) return;
-    if (!window.confirm("Are you sure you want to cancel your registration for this class?")) return;
-    try {
-      await removeGymnastFromClass(gymnastId, classId);
-      setLessons((prev) => prev.filter(l => l.id !== classId));
-    } catch {
-      alert("Failed to cancel class.");
-    }
+const handleCancelLesson = (classId: number) => {
+  setConfirmCancelClassId(classId);
+};
+
+const confirmCancelYes = async () => {
+  if (!gymnastId || confirmCancelClassId === null) return;
+
+  try {
+    await removeGymnastFromClass(gymnastId, confirmCancelClassId);
+    setLessons(prev => prev.filter(l => l.id !== confirmCancelClassId));
+    showMessage("Class cancelled successfully.", 'success');
+  } catch {
+    showMessage("Failed to cancel class.", 'error');
+  } finally {
+    setConfirmCancelClassId(null);
+  }
+};
+
+const confirmCancelNo = () => {
+  setConfirmCancelClassId(null);
+};
+
+  // הפעלה של תיבת אישור מחיקה מותאמת
+  const handleDeleteProfile = () => {
+    setConfirmDelete(true);
   };
 
-  const handleDeleteProfile = async () => {
+  const confirmDeleteYes = async () => {
+    setConfirmDelete(false);
     if (!gymnastId) return;
-    const confirmed = window.confirm("Are you sure you want to DELETE your profile? This action cannot be undone.");
-    if (!confirmed) return;
 
     try {
       await deleteGymnast(gymnastId);
-      alert("Your profile has been deleted.");
-      navigate("/Login");
+      showMessage("Your profile has been deleted.", 'success');
+      setTimeout(() => navigate("/Login"), 1500);
     } catch (error) {
-      alert("Failed to delete profile. Please try again later.");
+      showMessage("Failed to delete profile. Please try again later.", 'error');
       console.error("Delete error:", error);
     }
+  };
+
+  const confirmDeleteNo = () => {
+    setConfirmDelete(false);
   };
 
   if (loading) return <div className="profile-container">Loading profile...</div>;
@@ -99,7 +128,8 @@ export default function MyProfile() {
     <div className="profile-container">
       <h1>My Profile</h1>
 
-      {message && <div className="error">{message}</div>}
+      {/* הצגת ה־Toast */}
+      {message && <ToastMessage message={message} type={messageType} />}
 
       <label>
         First Name:
@@ -137,8 +167,6 @@ export default function MyProfile() {
         <input name="medicalInsurance" value={editedUser.medicalInsurance} onChange={handleChange} disabled={!editing} />
       </label>
 
-   
-
       {!editing ? (
         <>
           <button onClick={() => setEditing(true)}>Edit</button>
@@ -171,6 +199,23 @@ export default function MyProfile() {
           ))}
         </ul>
       )}
+
+      {confirmDelete && (
+        <div className="confirm-delete-toast">
+          <p>Are you sure you want to DELETE your profile? This action cannot be undone.</p>
+          <button onClick={confirmDeleteYes}>Yes</button>
+          <button onClick={confirmDeleteNo}>No</button>
+        </div>
+      )}
+
+      {confirmCancelClassId !== null && (
+  <div className="confirm-delete-toast">
+    <p>Are you sure you want to cancel your registration for this class?</p>
+    <button onClick={confirmCancelYes}>Yes</button>
+    <button onClick={confirmCancelNo}>No</button>
+  </div>
+)}
+
     </div>
   );
 }

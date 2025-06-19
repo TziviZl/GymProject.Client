@@ -1,68 +1,126 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import '../../css/Login.css'; 
+import ToastMessage from '../../components/shared/ToastMessage';
+import '../../css/Login.css';
 
-export default function Login() { 
-const [id, setId] = useState(''); 
-const [phone, setPhone] = useState(''); 
-const [error, setError] = useState(''); 
-const navigate = useNavigate(); 
-const { login } = useAuth(); 
+export default function Login() {
+  const [id, setId] = useState('');
+  const [phone, setPhone] = useState('');
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
+  const [code, setCode] = useState('');
+  const [awaitingCode, setAwaitingCode] = useState(false);
 
-async function handleSubmit(e: React.FormEvent) { 
-e.preventDefault(); 
-setError(''); 
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-try { 
-const res = await fetch(`http://localhost:5281/api/Gymnast/GetGymnastById?id=${encodeURIComponent(id)}`); 
-if (!res.ok) { 
-setError('User not found, must register'); 
-navigate('/Register', { state: { id } });
-}
+  const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
+    setMessage(msg);
+    setMessageType(type);
+    setTimeout(() => setMessage(''), 4000);
+  };
 
-const user = await res.json();
-if (user.cell !== phone) {
-setError('Invalid phone number for this user');
-return;
-}
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setMessage('');
+    setCode('');
+    setAwaitingCode(false);
 
-const sendCodeRes = await fetch('http://localhost:5281/Auth/SendCode', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify(phone),
-});
+    try {
+      const res = await fetch(`http://localhost:5281/api/Gymnast/GetGymnastById?id=${encodeURIComponent(id)}`);
+      if (!res.ok) {
+        setError('User not found, please register');
+        navigate('/Register', { state: { id } });
+        return;
+      }
 
-if (!sendCodeRes.ok) {
-setError('Error sending verification code');
-return;
-}
+      const user = await res.json();
+      if (user.cell !== phone) {
+        setError('Invalid phone number for this user');
+        return;
+      }
 
-const code = prompt('Enter the verification code you received in the phone call');
-if (!code) {
-setError('No verification code entered');
-return;
-}
+      const sendCodeRes = await fetch('http://localhost:5281/Auth/SendCode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(phone),
+      });
 
-const verifyRes = await fetch('http://localhost:5281/Auth/VerifyCode', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ phone, code }),
-});
+      if (!sendCodeRes.ok) {
+        setError('Error sending verification code');
+        return;
+      }
 
-if (!verifyRes.ok) {
-setError('Incorrect verification code');
-return;
-}
+      setAwaitingCode(true);
+      showMessage('Verification code sent! Please enter it below.', 'success');
+    } catch {
+      setError('General error, please try again');
+    }
+  }
 
-login(id); // ⬅ Save in Context
-navigate('/MyProfile');
-} catch (err) {
-setError('General error, please try again');
-} 
-} 
+  async function handleVerifyCode() {
+    if (!code) {
+      setError('Please enter the verification code');
+      return;
+    }
+    setError('');
+    try {
+      const verifyRes = await fetch('http://localhost:5281/Auth/VerifyCode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, code }),
+      });
 
-return (
+      if (!verifyRes.ok) {
+        setError('Incorrect verification code');
+        return;
+      }
 
-<div className="login-container"> <h2>Login</h2> <form onSubmit={handleSubmit}> <div> <label>ID:</label> <input type="text" value={id} onChange={e => setId(e.target.value)} required /> </div> <div> <label>Phone:</label> <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} required /> </div> <button type="submit">Sign in</button> </form> {error && <div className="error">{error}</div>} </div> );
+      login(id);
+      navigate('/MyProfile');
+    } catch {
+      setError('Failed to verify code');
+    }
+  }
+
+  return (
+    <div className="login-container">
+      <h2>Login</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>ID:</label>
+          <input type="text" value={id} onChange={e => setId(e.target.value)} required disabled={awaitingCode} />
+        </div>
+        <div>
+          <label>Phone:</label>
+          <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} required disabled={awaitingCode} />
+        </div>
+
+        {!awaitingCode && <button type="submit">Send Verification Code</button>}
+
+        {awaitingCode && (
+          <>
+            <div>
+              <label>Verification Code:</label>
+              <input
+                type="text"
+                value={code}
+                onChange={e => setCode(e.target.value)}
+                autoFocus
+                maxLength={6}
+              />
+            </div>
+            <button type="button" onClick={handleVerifyCode}>Verify Code</button>
+          </>
+        )}
+      </form>
+
+      {error && <div className="error">{error}</div>}
+
+      {message && <ToastMessage message={message} type={messageType} />}
+    </div>
+  );
 }

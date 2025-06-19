@@ -1,0 +1,46 @@
+.toast-message {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1c1c1c;
+  color: #ffa726;
+  padding: 16px 28px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 1rem;
+  z-index: 9999;
+  box-shadow: 0 0 14px rgba(255, 102, 0, 0.5);
+  border: 2px solid #ff6f00;
+  opacity: 0;
+  animation: slideFadeInOut 3.8s ease-in-out forwards;
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.toast-message.success {
+  color: #ffcc80;
+  border-color: #ffa726;
+  box-shadow: 0 0 12px rgba(255, 167, 38, 0.6);
+}
+
+.toast-message.error {
+  color: #ffcdd2;
+  border-color: #f44336;
+  box-shadow: 0 0 12px rgba(244, 67, 54, 0.5);
+}
+
+@keyframes slideFadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  10%, 90% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+}

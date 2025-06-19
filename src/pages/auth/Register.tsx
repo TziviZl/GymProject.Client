@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { newGymnast, MGymnast, addMembershipType, MembershipTypeEnum } from '../../api/gymnastApi';
 import { sendVerificationCode, verifyCode } from '../../api/authApi';
 import { useAuth } from '../../context/AuthContext';
+import ToastMessage from '../../components/shared/ToastMessage';
 import '../../css/Register.css';
 
 export default function Register() {
@@ -18,14 +19,17 @@ export default function Register() {
   const [phone, setPhone] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [medicalInsurance, setMedicalInsurance] = useState('');
-  
-  // טען מה localStorage אם קיים, אחרת ברירת מחדל
+
   const [membershipType, setMembershipType] = useState<MembershipTypeEnum | null>(() => {
     const saved = localStorage.getItem('membershipType');
     return saved ? Number(saved) : MembershipTypeEnum.monthly_Standard;
   });
-  
+
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
+  const [awaitingCode, setAwaitingCode] = useState(false);
+  const [code, setCode] = useState('');
 
   const membershipOptions = Object.entries(MembershipTypeEnum)
     .filter(([key]) => isNaN(Number(key)))
@@ -37,18 +41,35 @@ export default function Register() {
     }
   }, [location.state?.id]);
 
+  const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
+    setMessage(msg);
+    setMessageType(type);
+    setTimeout(() => setMessage(''), 4000);
+  };
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    setMessage('');
+    setCode('');
+    setAwaitingCode(false);
 
     try {
       await sendVerificationCode(phone);
-      const code = prompt('A verification code has been sent to your phone. Please enter the code:');
-      if (!code) {
-        setError('A verification code must be entered');
-        return;
-      }
+      setAwaitingCode(true);
+      showMessage('Verification code sent! Please enter it below.', 'success');
+    } catch (e: any) {
+      setError('Error sending verification code');
+    }
+  }
 
+  async function handleVerifyCode() {
+    if (!code) {
+      setError('Please enter the verification code');
+      return;
+    }
+    setError('');
+    try {
       await verifyCode(phone, code);
 
       const newUser: MGymnast = {
@@ -58,7 +79,7 @@ export default function Register() {
         email,
         cell: phone,
         birthDate,
-        medicalInsurance
+        medicalInsurance,
       };
 
       const res = await newGymnast(newUser);
@@ -67,17 +88,15 @@ export default function Register() {
         login(id);
         if (membershipType !== null) {
           await addMembershipType(membershipType, id);
-          // שמור ב־localStorage
           localStorage.setItem('membershipType', membershipType.toString());
         }
-        alert('Registration Successfully');
-        navigate('/MyProfile');
+        showMessage('Registration successful!', 'success');
+        setTimeout(() => navigate('/MyProfile'), 1500);
       } else {
         const text = res.data?.message || res.statusText || 'Registration Error';
         setError(text);
       }
     } catch (e: any) {
-      console.error(e.response?.data || e.message || e);
       setError(e.response?.data || 'Communication error or incorrect data');
     }
   }
@@ -85,7 +104,7 @@ export default function Register() {
   return (
     <div className="register-container">
       <h1>Register</h1>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={awaitingCode ? (e) => e.preventDefault() : handleSubmit}>
         {initialId ? (
           <p>ID: {id}</p>
         ) : (
@@ -96,6 +115,7 @@ export default function Register() {
               value={id}
               onChange={e => setId(e.target.value)}
               required
+              disabled={awaitingCode}
             />
           </label>
         )}
@@ -107,6 +127,7 @@ export default function Register() {
             value={firstName}
             onChange={e => setFirstName(e.target.value)}
             required
+            disabled={awaitingCode}
           />
         </label>
 
@@ -117,6 +138,7 @@ export default function Register() {
             value={lastName}
             onChange={e => setLastName(e.target.value)}
             required
+            disabled={awaitingCode}
           />
         </label>
 
@@ -127,6 +149,7 @@ export default function Register() {
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
+            disabled={awaitingCode}
           />
         </label>
 
@@ -137,6 +160,7 @@ export default function Register() {
             value={phone}
             onChange={e => setPhone(e.target.value)}
             required
+            disabled={awaitingCode}
           />
         </label>
 
@@ -147,6 +171,7 @@ export default function Register() {
             value={birthDate}
             onChange={e => setBirthDate(e.target.value)}
             required
+            disabled={awaitingCode}
           />
         </label>
 
@@ -157,6 +182,7 @@ export default function Register() {
             value={medicalInsurance}
             onChange={e => setMedicalInsurance(e.target.value)}
             required
+            disabled={awaitingCode}
           />
         </label>
 
@@ -169,10 +195,10 @@ export default function Register() {
             onChange={e => {
               const val = Number(e.target.value);
               setMembershipType(val);
-              // עדכון גם ב־localStorage מיד עם שינוי
               localStorage.setItem('membershipType', val.toString());
             }}
             required
+            disabled={awaitingCode}
           >
             <option value="">Select a subscription</option>
             {membershipOptions.map(option => (
@@ -183,10 +209,30 @@ export default function Register() {
           </select>
         </div>
 
-        <button type="submit">Subscribe</button>
+        {!awaitingCode && <button type="submit">Send Verification Code</button>}
+
+        {awaitingCode && (
+          <>
+            <label>
+              Verification Code:
+              <input
+                type="text"
+                value={code}
+                onChange={e => setCode(e.target.value)}
+                maxLength={6}
+                autoFocus
+              />
+            </label>
+            <button type="button" onClick={handleVerifyCode}>
+              Verify Code & Register
+            </button>
+          </>
+        )}
       </form>
 
       {error && <p className="error">{error}</p>}
+
+      {message && <ToastMessage message={message} type={messageType} />}
     </div>
   );
 }

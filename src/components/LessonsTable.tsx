@@ -2,20 +2,31 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAllLessons, MViewStudioClasses, isFull } from "../api/classApi";
 import { addGymnastLesson } from "../api/gymnastApi";
+import ToastMessage from "./shared/ToastMessage";
 import "../css/LessonsTable.css";
 
 const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
 function getUpcomingWeekDates(): Record<string, string> {
   const today = new Date();
-  const sunday = new Date(today);
-  sunday.setDate(today.getDate() - today.getDay()); 
+
+  const isSaturdayAfter8pm =
+    today.getDay() === 6 && today.getHours() >= 20;
+
+  const baseDate = new Date(today);
+
+  if (isSaturdayAfter8pm) {
+    baseDate.setDate(baseDate.getDate() + 1);
+  }
+
+  const sunday = new Date(baseDate);
+  sunday.setDate(sunday.getDate() - sunday.getDay());
 
   const dates: Record<string, string> = {};
   for (let i = 0; i < 6; i++) {
     const day = new Date(sunday);
     day.setDate(sunday.getDate() + i);
-    dates[daysOfWeek[i]] = day.toLocaleDateString("he-IL", {
+    dates[daysOfWeek[i]] = day.toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "2-digit",
     });
@@ -23,12 +34,15 @@ function getUpcomingWeekDates(): Record<string, string> {
   return dates;
 }
 
+
 export default function LessonsTable() {
   const [lessons, setLessons] = useState<MViewStudioClasses[]>([]);
   const [fullStatus, setFullStatus] = useState<Record<number, boolean>>({});
   const [loading, setLoading] = useState(false);
   const [isFullLoading, setIsFullLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<"success" | "error">("success");
   const navigate = useNavigate();
 
   const weekDates = getUpcomingWeekDates();
@@ -62,26 +76,32 @@ export default function LessonsTable() {
     fetchLessons();
   }, []);
 
+  const showMessage = (msg: string, type: "success" | "error" = "success") => {
+    setMessage(msg);
+    setMessageType(type);
+    setTimeout(() => setMessage(""), 3800);
+  };
+
   const handleJoinLesson = async (lesson: MViewStudioClasses) => {
     const gymnastId = localStorage.getItem("gymnastId");
     if (!gymnastId) {
-      alert("You must log in before registering for a lesson");
+      showMessage("You must log in before registering for a lesson", "error");
       navigate("/Login");
       return;
     }
 
     const full = await isFull(lesson.id);
     if (full.data) {
-      alert("This class is already full.");
+      showMessage("This class is already full", "error");
       return;
     }
 
     try {
       await addGymnastLesson(gymnastId, lesson.id);
-      alert("You have registered successfully!");
+      showMessage("Successfully registered for the lesson!", "success");
     } catch (err: any) {
       console.error(err);
-      alert(err?.response?.data || "Error registering for class");
+      showMessage(err?.response?.data || "Error registering for class", "error");
     }
   };
 
@@ -108,16 +128,17 @@ export default function LessonsTable() {
             </h3>
             {lessonsByDay[day]?.length ? (
               lessonsByDay[day].map((lesson, idx) => {
-                const isLessonInPast =
-                  new Date(lesson.date).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0);
+                const lessonDateTime = new Date(lesson.date);
+                const now = new Date();
+                const isLessonInPast = lessonDateTime < now;
                 const isLessonFull = fullStatus[lesson.id];
                 const disabled = isLessonInPast || isLessonFull;
 
                 const buttonText = isLessonInPast
                   ? "Class Passed"
                   : isLessonFull
-                  ? "Full"
-                  : "Join";
+                    ? "Full"
+                    : "Join";
 
                 return (
                   <div className="lesson-card" key={idx}>
@@ -125,7 +146,7 @@ export default function LessonsTable() {
                     <p>Level: {lesson.level}</p>
                     <p>
                       Time:{" "}
-                      {new Date(lesson.date).toLocaleTimeString("en-US", {
+                      {lessonDateTime.toLocaleTimeString("en-GB", {
                         hour: "2-digit",
                         minute: "2-digit",
                         hour12: false,
@@ -135,15 +156,6 @@ export default function LessonsTable() {
                     <button
                       onClick={() => handleJoinLesson(lesson)}
                       disabled={disabled}
-                      style={{
-                        backgroundColor: disabled ? "#ccc" : "#ffa726",
-                        cursor: disabled ? "not-allowed" : "pointer",
-                        color: "white",
-                        padding: "8px 12px",
-                        border: "none",
-                        borderRadius: "5px",
-                        marginTop: "10px",
-                      }}
                     >
                       {buttonText}
                     </button>
@@ -156,6 +168,8 @@ export default function LessonsTable() {
           </div>
         ))}
       </div>
+
+      {message && <ToastMessage message={message} type={messageType} />}
     </div>
   );
 }

@@ -17,8 +17,8 @@ export default function Footer() {
 
         <div className="footer-section">
           <h3>Opening Hours</h3>
-          <p>Sunday - Thursday: 06:00–22:00</p>
-          <p>Friday: 06:00–14:00</p>
+          <p>Sunday - Thursday: 08:00–20:00</p>
+          <p>Friday: 08:00–12:00</p>
           <p>Saturday: Closed</p>
         </div>
 
