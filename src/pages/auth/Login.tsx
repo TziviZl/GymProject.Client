@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ToastMessage from '../../components/shared/ToastMessage';
+import { sendVerificationCode, verifyCode, getUserType } from '../../api/authApi';
+import { getGymnastById } from '../../api/gymnastApi';
+import { getTrainerById } from '../../api/trainerApi';
 import '../../css/Login.css';
+
+type UserType = 'gymnast' | 'trainer' | 'secretary';
 
 export default function Login() {
   const [id, setId] = useState('');
@@ -30,59 +35,95 @@ export default function Login() {
     setAwaitingCode(false);
 
     try {
-      const res = await fetch(`http://localhost:5281/api/Gymnast/GetGymnastById?id=${encodeURIComponent(id)}`);
-      if (!res.ok) {
-        setError('User not found, please register');
+      const typeRes = await getUserType(id);
+      const userTypeRaw = typeRes.data?.toLowerCase().trim();
+      console.log('User type response from API:', typeRes.data);
+      console.log('Parsed userTypeRaw:', userTypeRaw);
+
+      if (!userTypeRaw || !['gymnast', 'trainer', 'secretary'].includes(userTypeRaw)) {
+        setError('User not found. Please register.');
         navigate('/Register', { state: { id } });
         return;
       }
 
-      const user = await res.json();
+      const userType = userTypeRaw as UserType;
+      console.log('User type determined as:', userType);
+
+      let user: any;
+      if (userType === 'gymnast') {
+        console.log('Fetching gymnast data...');
+        const res = await getGymnastById(id);
+        console.log('Gymnast data received:', res.data);
+        user = res.data;
+      } else if (userType === 'trainer') {
+        console.log('Fetching trainer data...');
+        const res = await getTrainerById(id);
+        console.log('Trainer data received:', res.data);
+        user = res.data;
+      } else {
+        console.log('Secretary - no data fetch, using phone only');
+        user = { cell: phone };
+      }
+
+      if (!user) {
+        setError('User data not found.');
+        return;
+      }
+
+      console.log('Comparing phone:', user.cell, '===', phone);
+
       if (user.cell !== phone) {
-        setError('Invalid phone number for this user');
+        setError('Phone number does not match our records.');
         return;
       }
 
-      const sendCodeRes = await fetch('http://localhost:5281/Auth/SendCode', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(phone),
-      });
-
-      if (!sendCodeRes.ok) {
-        setError('Error sending verification code');
-        return;
-      }
-
+      await sendVerificationCode(phone);
       setAwaitingCode(true);
-      showMessage('Verification code sent! Please enter it below.', 'success');
-    } catch {
-      setError('General error, please try again');
+      showMessage('Verification code sent. Please enter it below.');
+    } catch (err: any) {
+      console.error('Error in handleSubmit:', err);
+      if (err.response?.status === 404) {
+        navigate('/Register', { state: { id } });
+      } else {
+        setError('An error occurred. Please try again.');
+      }
     }
   }
 
   async function handleVerifyCode() {
     if (!code) {
-      setError('Please enter the verification code');
+      setError('Please enter the verification code.');
       return;
     }
-    setError('');
-    try {
-      const verifyRes = await fetch('http://localhost:5281/Auth/VerifyCode', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, code }),
-      });
 
-      if (!verifyRes.ok) {
-        setError('Incorrect verification code');
+    setError('');
+
+    try {
+      await verifyCode(phone, code);
+
+      const typeRes = await getUserType(id);
+      const userTypeRaw = typeRes.data?.toLowerCase().trim();
+      const userType = userTypeRaw as UserType;
+
+      console.log('Verifying user type on code verify:', userType);
+
+      if (!userType || !['gymnast', 'trainer', 'secretary'].includes(userType)) {
+        setError('Could not identify user type.');
         return;
       }
 
-      login(id);
-      navigate('/MyProfile');
-    } catch {
-      setError('Failed to verify code');
+      login(id, userType);
+
+      if (userType === 'trainer') {
+        navigate('/TrainerProfile');
+      } else if (userType === 'secretary') {
+        navigate('/SecretaryProfile');
+      } else {
+        navigate('/MyProfile');
+      }
+    } catch (error) {
+      console.error('Verification error:', error);
+      setError('Incorrect verification code or server error.');
     }
   }
 
@@ -92,11 +133,23 @@ export default function Login() {
       <form onSubmit={handleSubmit}>
         <div>
           <label>ID:</label>
-          <input type="text" value={id} onChange={e => setId(e.target.value)} required disabled={awaitingCode} />
+          <input
+            type="text"
+            value={id}
+            onChange={e => setId(e.target.value)}
+            required
+            disabled={awaitingCode}
+          />
         </div>
         <div>
           <label>Phone:</label>
-          <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} required disabled={awaitingCode} />
+          <input
+            type="tel"
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+            required
+            disabled={awaitingCode}
+          />
         </div>
 
         {!awaitingCode && <button type="submit">Send Verification Code</button>}
@@ -119,7 +172,6 @@ export default function Login() {
       </form>
 
       {error && <div className="error">{error}</div>}
-
       {message && <ToastMessage message={message} type={messageType} />}
     </div>
   );

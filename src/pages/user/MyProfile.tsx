@@ -9,16 +9,18 @@ import {
   MViewStudioClasses,
   removeGymnastFromClass,
 } from '../../api/gymnastApi';
+import { isCancelled } from '../../api/classApi';
 import { useAuth } from '../../context/AuthContext';
-import ToastMessage from '../../components/shared/ToastMessage'; 
+import ToastMessage from '../../components/shared/ToastMessage';
 import '../../css/MyProfile.css';
 
 export default function MyProfile() {
-  const { gymnastId } = useAuth();
+  const { userId } = useAuth();
   const navigate = useNavigate();
   const [user, setUser] = useState<MGymnast | null>(null);
   const [editedUser, setEditedUser] = useState<MGymnast | null>(null);
   const [lessons, setLessons] = useState<MViewStudioClasses[]>([]);
+  const [cancelledStatus, setCancelledStatus] = useState<Record<number, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -26,7 +28,6 @@ export default function MyProfile() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmCancelClassId, setConfirmCancelClassId] = useState<number | null>(null);
 
-  // פונקציה להציג הודעה עם toast
   const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
     setMessage(msg);
     setMessageType(type);
@@ -34,25 +35,43 @@ export default function MyProfile() {
   };
 
   useEffect(() => {
-    if (!gymnastId) {
+    if (!userId) {
       navigate('/Login');
       return;
     }
-    getGymnastById(gymnastId)
-      .then(res => {
-        setUser(res.data);
-        setEditedUser(res.data);
-      })
-      .catch(() => showMessage("We were unable to load your profile.", 'error'))
-      .finally(() => setLoading(false));
-  }, [gymnastId, navigate]);
 
-  useEffect(() => {
-    if (!gymnastId) return;
-    getGymnastLessons(gymnastId, 10)
-      .then(res => setLessons(res.data))
-      .catch(() => showMessage("Failed to load lessons.", 'error'));
-  }, [gymnastId]);
+    const fetchProfileAndLessons = async () => {
+      try {
+        const userRes = await getGymnastById(userId);
+        setUser(userRes.data);
+        setEditedUser(userRes.data);
+
+        const lessonsRes = await getGymnastLessons(userId, 10);
+        setLessons(lessonsRes.data);
+
+        // בדיקת שיעורים שבוטלו
+        const cancelledMap: Record<number, boolean> = {};
+        await Promise.all(
+          lessonsRes.data.map(async (lesson) => {
+            try {
+              const res = await isCancelled(lesson.id);
+              cancelledMap[lesson.id] = res.data;
+            } catch {
+              cancelledMap[lesson.id] = false;
+            }
+          })
+        );
+        setCancelledStatus(cancelledMap);
+      } catch (err) {
+        showMessage("Failed to load profile or lessons.", 'error');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfileAndLessons();
+  }, [userId, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!editedUser) return;
@@ -62,58 +81,51 @@ export default function MyProfile() {
 
   const handleSave = async () => {
     if (!editedUser) return;
-
     try {
       const { memberShipType, weeklyCounter, ...dataToUpdate } = editedUser as any;
-
       const res = await updateGymnast(dataToUpdate);
       setUser(res.data);
       showMessage("Details updated successfully.", 'success');
       setEditing(false);
     } catch (error: any) {
       showMessage("Failed to save changes.", 'error');
-      console.error("Error updating user:", error);
     }
   };
 
-const handleCancelLesson = (classId: number) => {
-  setConfirmCancelClassId(classId);
-};
+  const handleCancelLesson = (classId: number) => {
+    setConfirmCancelClassId(classId);
+  };
 
-const confirmCancelYes = async () => {
-  if (!gymnastId || confirmCancelClassId === null) return;
+  const confirmCancelYes = async () => {
+    if (!userId || confirmCancelClassId === null) return;
+    try {
+      await removeGymnastFromClass(userId, confirmCancelClassId);
+      setLessons(prev => prev.filter(l => l.id !== confirmCancelClassId));
+      showMessage("Class cancelled successfully.", 'success');
+    } catch {
+      showMessage("Failed to cancel class.", 'error');
+    } finally {
+      setConfirmCancelClassId(null);
+    }
+  };
 
-  try {
-    await removeGymnastFromClass(gymnastId, confirmCancelClassId);
-    setLessons(prev => prev.filter(l => l.id !== confirmCancelClassId));
-    showMessage("Class cancelled successfully.", 'success');
-  } catch {
-    showMessage("Failed to cancel class.", 'error');
-  } finally {
+  const confirmCancelNo = () => {
     setConfirmCancelClassId(null);
-  }
-};
+  };
 
-const confirmCancelNo = () => {
-  setConfirmCancelClassId(null);
-};
-
-  // הפעלה של תיבת אישור מחיקה מותאמת
   const handleDeleteProfile = () => {
     setConfirmDelete(true);
   };
 
   const confirmDeleteYes = async () => {
     setConfirmDelete(false);
-    if (!gymnastId) return;
-
+    if (!userId) return;
     try {
-      await deleteGymnast(gymnastId);
+      await deleteGymnast(userId);
       showMessage("Your profile has been deleted.", 'success');
       setTimeout(() => navigate("/Login"), 1500);
     } catch (error) {
       showMessage("Failed to delete profile. Please try again later.", 'error');
-      console.error("Delete error:", error);
     }
   };
 
@@ -128,51 +140,20 @@ const confirmCancelNo = () => {
     <div className="profile-container">
       <h1>My Profile</h1>
 
-      {/* הצגת ה־Toast */}
       {message && <ToastMessage message={message} type={messageType} />}
 
-      <label>
-        First Name:
-        <input name="firstName" value={editedUser.firstName} onChange={handleChange} disabled={!editing} />
-      </label>
-
-      <label>
-        Last Name:
-        <input name="lastName" value={editedUser.lastName} onChange={handleChange} disabled={!editing} />
-      </label>
-
-      <label>
-        Email:
-        <input name="email" value={editedUser.email} onChange={handleChange} disabled={!editing} />
-      </label>
-
-      <label>
-        Phone:
-        <input name="cell" value={editedUser.cell} onChange={handleChange} disabled={!editing} />
-      </label>
-
-      <label>
-        Date of Birth:
-        <input
-          type="date"
-          name="birthDate"
-          value={editedUser.birthDate?.slice(0, 10) || ''}
-          onChange={handleChange}
-          disabled={!editing}
-        />
-      </label>
-
-      <label>
-        Medical Insurance:
-        <input name="medicalInsurance" value={editedUser.medicalInsurance} onChange={handleChange} disabled={!editing} />
-      </label>
+      {/* טופס פרטים אישיים */}
+      <label>First Name: <input name="firstName" value={editedUser.firstName} onChange={handleChange} disabled={!editing} /></label>
+      <label>Last Name: <input name="lastName" value={editedUser.lastName} onChange={handleChange} disabled={!editing} /></label>
+      <label>Email: <input name="email" value={editedUser.email} onChange={handleChange} disabled={!editing} /></label>
+      <label>Phone: <input name="cell" value={editedUser.cell} onChange={handleChange} disabled={!editing} /></label>
+      <label>Date of Birth: <input type="date" name="birthDate" value={editedUser.birthDate?.slice(0, 10) || ''} onChange={handleChange} disabled={!editing} /></label>
+      <label>Medical Insurance: <input name="medicalInsurance" value={editedUser.medicalInsurance} onChange={handleChange} disabled={!editing} /></label>
 
       {!editing ? (
         <>
           <button onClick={() => setEditing(true)}>Edit</button>
-          <button onClick={handleDeleteProfile} className="delete-btn" title="Delete your profile permanently">
-            Delete
-          </button>
+          <button onClick={handleDeleteProfile} className="delete-btn">Delete</button>
         </>
       ) : (
         <>
@@ -183,23 +164,29 @@ const confirmCancelNo = () => {
 
       <hr />
 
+      {/* רשימת שיעורים */}
       <h2>My Lessons</h2>
       {lessons.length === 0 ? (
         <p>You are not enrolled in any lessons yet.</p>
       ) : (
-        <ul>
+        <ul className="lessons-list">
           {lessons.map(lesson => (
             <li key={lesson.id}>
               <div>
                 <strong>{lesson.name}</strong><br />
                 Trainer: {lesson.trainerName} | Level: {lesson.level}
               </div>
-              <button onClick={() => handleCancelLesson(lesson.id)}>Cancel</button>
+              {cancelledStatus[lesson.id] ? (
+                <span style={{ color: 'red', fontWeight: 'bold' }}>Cancelled by trainer</span>
+              ) : (
+                <button onClick={() => handleCancelLesson(lesson.id)}>Cancel</button>
+              )}
             </li>
           ))}
         </ul>
       )}
 
+      {/* חלונות אישור */}
       {confirmDelete && (
         <div className="confirm-delete-toast">
           <p>Are you sure you want to DELETE your profile? This action cannot be undone.</p>
@@ -209,13 +196,12 @@ const confirmCancelNo = () => {
       )}
 
       {confirmCancelClassId !== null && (
-  <div className="confirm-delete-toast">
-    <p>Are you sure you want to cancel your registration for this class?</p>
-    <button onClick={confirmCancelYes}>Yes</button>
-    <button onClick={confirmCancelNo}>No</button>
-  </div>
-)}
-
+        <div className="confirm-delete-toast">
+          <p>Are you sure you want to cancel your registration for this class?</p>
+          <button onClick={confirmCancelYes}>Yes</button>
+          <button onClick={confirmCancelNo}>No</button>
+        </div>
+      )}
     </div>
   );
 }

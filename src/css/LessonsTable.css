@@ -20,12 +20,14 @@
   gap: 16px;
   direction: ltr;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  align-items: start;
 }
 
 .lesson-column {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  /* הסרנו height: 100% כדי לא לכפות גובה אחיד */
 }
 
 .lesson-card {
@@ -37,10 +39,12 @@
   color: white;
   transition: box-shadow 0.3s ease, transform 0.3s ease;
   border: 1px solid #ff6f00;
-  height: 240px;
+  min-height: 260px;
+  max-height: 280px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  overflow: hidden;
 }
 
 .lesson-card:hover {
@@ -62,8 +66,8 @@
   color: #ddd;
 }
 
+/* כפתורים רגילים של שיעור */
 .lesson-card button {
-  margin-top: 14px;
   background: #ff6f00;
   color: white;
   border: none;
@@ -73,6 +77,8 @@
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  margin-top: 14px;
+  width: 100%;
 }
 
 .lesson-card button:hover {
@@ -86,3 +92,44 @@
   opacity: 0.6;
 }
 
+.lesson-card .small-button {
+  background: #ff6f00;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  margin-top: 0;
+  margin-right: 8px;
+}
+
+.lesson-card .small-button:hover {
+  background: #ff9100;
+  box-shadow: 0 3px 10px rgba(255, 145, 0, 0.6);
+}
+
+.lesson-card .small-button:disabled {
+  background: #555;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.lesson-card .trainer-buttons {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 12px;
+}
+
+.other-trainer-note {
+  font-style: italic;
+  color: #aaa;
+  font-size: 0.85rem;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.2;
+  text-align: center;
+  margin-top: 6px;
+}

@@ -85,7 +85,7 @@ export default function Register() {
       const res = await newGymnast(newUser);
 
       if (res.status === 200 || res.status === 201) {
-        login(id);
+        login(id, 'gymnast');
         if (membershipType !== null) {
           await addMembershipType(membershipType, id);
           localStorage.setItem('membershipType', membershipType.toString());

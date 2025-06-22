@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:5281/api'; // וודא שה-BASE_URL נכון עבור הסביבה שלך
+const BASE_URL = 'http://localhost:5281/api/Trainer'; 
 
 // ממשקים (ניתן להגדיר בקובץ נפרד, לדוגמה: types.ts)
 export interface MTrainer {
@@ -14,20 +14,17 @@ export interface MTrainer {
 }
 
 export interface MViewTrainerBL {
-  // הגדר את השדות של M_ViewTrainerBL
   firstName: string
   lastName: string
   level: string;
   nummOfStudioClasses: number;
-  // ... שדות נוספים
 }
 
 export interface MViewStudioClasses {
+    id: number; 
     name: string;
     level: string;
     date: Date
-  // הגדר את השדות של M_ViewStudioClasses
-  // ... שדות נוספים
 }
 
 export interface BackupTrainers {
@@ -35,7 +32,7 @@ export interface BackupTrainers {
     firstName: string;
     lastName: string;
     birthDate: Date;
-    specialization: string; // או Enum אם יש לך רשימה קבועה של התמחויות
+    specialization: string; 
     email: string;
     cell: string;
     
@@ -44,29 +41,30 @@ export interface BackupTrainers {
 }
 
 export const getNumOfGymnasts = (trainerId: string, courseDate: string) =>
-  axios.get<number>(`${BASE_URL}/Trainer/GetNumOfGymnasts`, {
+  axios.get<number>(`${BASE_URL}/GetNumOfGymnasts`, {
     params: { trainerId, courseDate },
   });
 
-export const getAllTrainers = () => axios.get<MViewTrainerBL[]>(`${BASE_URL}/Trainer`);
+export const getAllTrainers = () => axios.get<MViewTrainerBL[]>(`${BASE_URL}`);
 
 export const newTrainer = (trainer: MTrainer) =>
-  axios.post(`${BASE_URL}/Trainer/NewTrainer`, trainer);
+  axios.post(`${BASE_URL}/NewTrainer`, trainer);
 
 export const getTrainerStudioClasses = (trainerId: string) =>
-  axios.get<MViewStudioClasses[]>(`${BASE_URL}/Trainer/GetTrainerSudioClasses`, {
+  axios.get<MViewStudioClasses[]>(`${BASE_URL}/GetTrainerStudioClasses`, {
     params: { trainerId },
   });
 
 export const updateTrainer = (trainer: MTrainer) =>
-  axios.put(`${BASE_URL}/Trainer/UpdateTrainer`, trainer);
+  axios.put(`${BASE_URL}/UpdateTrainer`, trainer);
 
 export const getTrainerById = (trainerId: string) =>
-  axios.get<MTrainer>(`${BASE_URL}/Trainer/GetTrainerById`, { params: { trainerId } });
+  axios.get<MTrainer>(`${BASE_URL}/GetTrainerById`, { params: { trainerId } });
+
 
 export const deleteTrainer = (trainerId: string) =>
-  axios.delete<string[] | string>(`${BASE_URL}/Trainer/DeleteTrainer`, {
+  axios.delete<string[] | string>(`${BASE_URL}/DeleteTrainer`, {
     params: { trainerId },
   });
 
-export const getBackupTrainers = () => axios.get<BackupTrainers[]>(`${BASE_URL}/Trainer/GetBackupTrainers`);
+export const getBackupTrainers = () => axios.get<BackupTrainers[]>(`${BASE_URL}/GetBackupTrainers`);

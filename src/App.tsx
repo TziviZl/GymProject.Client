@@ -8,9 +8,10 @@ import Blog from "./components/SportBlog";
 import { AuthProvider } from "./context/AuthContext";
 import HomePage from "./pages/home/Home";
 import Contact from "./pages/user/Contact"; 
-import About from "./components/shared/About"; // Assuming you have an About component
+import About from "./components/shared/About"; 
 import Footer from "./components/shared/Footer";
 import ScrollToTop from "./components/shared/ScrollToTop";
+import TrainerProfile from "./pages/trainer/TrainerProfile";
 
 
 function Layout() {
@@ -33,8 +34,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} /> {/* דף הבית */}
-             {<Route path="Blog" element={<Blog />} />}
-
+            <Route path="Blog" element={<Blog />} />
+            <Route path="TrainerProfile" element={<TrainerProfile />} />
             <Route path="Login" element={<Login />} />
             <Route path="Register" element={<Register />} />
             <Route path="MyProfile" element={<MyProfile />} />
