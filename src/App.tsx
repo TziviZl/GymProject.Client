@@ -13,6 +13,16 @@ import Footer from "./components/shared/Footer";
 import ScrollToTop from "./components/shared/ScrollToTop";
 import TrainerProfile from "./pages/trainer/TrainerProfile";
 
+import AllTrainers from "./pages/admin/Trainers/AllTrainers";
+
+
+
+import SecretaryDashboard from "./pages/SecretaryDashboard";
+
+import AllGymnasts from "./pages/admin/Gymnasts/AllGymnasts";
+
+// בתוך ה-Routes
+
 
 function Layout() {
   return (
@@ -35,6 +45,10 @@ function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} /> {/* דף הבית */}
             <Route path="Blog" element={<Blog />} />
+            <Route path="/SecretaryDashboard" element={<SecretaryDashboard />} />
+<            Route path="/ManageGymnasts" element={<AllGymnasts />} />
+<            Route path="/ManageTrainers" element={<AllTrainers />} />
+
             <Route path="TrainerProfile" element={<TrainerProfile />} />
             <Route path="Login" element={<Login />} />
             <Route path="Register" element={<Register />} />

@@ -19,16 +19,18 @@ export interface MViewGymnastBL {
   id: string;
   firstName: string;
   lastName: string;
-MedicalInsurance : string,
+medicalInsurance : string,
 membershipType: MembershipTypeEnum;
 }
 
 export interface MViewStudioClasses {
-  id: number;
-name: string;
-trainerName?: string; 
-level: string;
-date: Date;
+  id: number; // או string, תלוי איך מחזירים מהשרת
+  name: string;
+  level: string;
+  trainerID: string; // מזהה המאמן
+  trainerName: string; // שם המאמן
+  date: Date; // או Date, תלוי איך מחזירים מהשרת
+  // ... שדות נוספים אם יש
 }
 
 export enum MembershipTypeEnum {
@@ -54,7 +56,7 @@ export interface StudioClass {
 export const newGymnast = (gymnast: MGymnast) =>
   axios.post(`${BASE_URL}/NewGymnast`, gymnast);
 
-export const getAllGymnasts = () => axios.get<MViewGymnastBL[]>(`${BASE_URL}/Gymnast`);
+export const getAllGymnasts = () => axios.get<MViewGymnastBL[]>(`${BASE_URL}`);
 
 export const addMembershipType = (type: MembershipTypeEnum, id: string) =>
   axios.put(`${BASE_URL}/AddMembershipType`, null, {
@@ -75,6 +77,8 @@ export const updateGymnast = (gymnast: MGymnast) =>
 export const deleteGymnast = (id: string) =>
   axios.delete(`${BASE_URL}/DeleteGymnast`, { params: { id } });
 
+
+
 export const addGymnastLesson = (gymnastId: string, studioClassId: number) =>
   axios.post(`${BASE_URL}/AddGymnastLesson`, null, {
     params: { gymnastId, studioClassId },
@@ -90,16 +94,24 @@ export const getGymnastLessons = (gymnastId: string, numOfLesson: number) =>
   axios.get<MViewStudioClasses[]>(`${BASE_URL}/GetGymnastLessons`, {
     params: { gymnastId, numOfLesson },
   });
-
-export const getAllGymnastInSpecificClass = (studioClass: StudioClass) =>
-  axios.get<MViewStudioClasses[]>(`${BASE_URL}/GetAllGymnastInSpecificClass`, {
-    params: studioClass,
+export const getGymnastsInClass = (studioClass: StudioClass) =>
+  axios.get<MGymnast[]>(`${BASE_URL}/GetAllGymnastInSpecificClass`, {
+    params: studioClass
   });
+
+export const getAllGymnastInSpecificClass = (studioClassId: number) =>
+  axios.get<MViewStudioClasses[]>(`${BASE_URL}/GetAllGymnastInSpecificClass`, {
+    params: studioClassId,
+  });
+
+
+
 
 export const getAllGymnastInSpecificLevel = (level: string) =>
   axios.get<MViewGymnastBL[]>(`${BASE_URL}/GetAllGymnastInSpecificLevel`, {
     params: { level },
   });
+  
 
 export const getAllGymnastByAge = (minAge: number, maxAge: number) =>
   axios.get<MViewGymnastBL[]>(`${BASE_URL}/GetAllGymnastByAge`, {

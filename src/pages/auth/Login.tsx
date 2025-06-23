@@ -37,8 +37,6 @@ export default function Login() {
     try {
       const typeRes = await getUserType(id);
       const userTypeRaw = typeRes.data?.toLowerCase().trim();
-      console.log('User type response from API:', typeRes.data);
-      console.log('Parsed userTypeRaw:', userTypeRaw);
 
       if (!userTypeRaw || !['gymnast', 'trainer', 'secretary'].includes(userTypeRaw)) {
         setError('User not found. Please register.');
@@ -47,30 +45,22 @@ export default function Login() {
       }
 
       const userType = userTypeRaw as UserType;
-      console.log('User type determined as:', userType);
-
       let user: any;
+
       if (userType === 'gymnast') {
-        console.log('Fetching gymnast data...');
         const res = await getGymnastById(id);
-        console.log('Gymnast data received:', res.data);
         user = res.data;
       } else if (userType === 'trainer') {
-        console.log('Fetching trainer data...');
         const res = await getTrainerById(id);
-        console.log('Trainer data received:', res.data);
         user = res.data;
-      } else {
-        console.log('Secretary - no data fetch, using phone only');
-        user = { cell: phone };
+      } else if (userType === 'secretary') {
+        user = { cell: phone }; // מזכירה – לא שומרת מידע בשרת, משתמשים במספר טלפון בלבד
       }
 
       if (!user) {
         setError('User data not found.');
         return;
       }
-
-      console.log('Comparing phone:', user.cell, '===', phone);
 
       if (user.cell !== phone) {
         setError('Phone number does not match our records.');
@@ -81,7 +71,7 @@ export default function Login() {
       setAwaitingCode(true);
       showMessage('Verification code sent. Please enter it below.');
     } catch (err: any) {
-      console.error('Error in handleSubmit:', err);
+      console.error('Login error:', err);
       if (err.response?.status === 404) {
         navigate('/Register', { state: { id } });
       } else {
@@ -105,8 +95,6 @@ export default function Login() {
       const userTypeRaw = typeRes.data?.toLowerCase().trim();
       const userType = userTypeRaw as UserType;
 
-      console.log('Verifying user type on code verify:', userType);
-
       if (!userType || !['gymnast', 'trainer', 'secretary'].includes(userType)) {
         setError('Could not identify user type.');
         return;
@@ -114,12 +102,17 @@ export default function Login() {
 
       login(id, userType);
 
-      if (userType === 'trainer') {
-        navigate('/TrainerProfile');
-      } else if (userType === 'secretary') {
-        navigate('/SecretaryProfile');
-      } else {
-        navigate('/MyProfile');
+      // ניווט לפי סוג המשתמש
+      switch (userType) {
+        case 'trainer':
+          navigate('/TrainerProfile');
+          break;
+        case 'secretary':
+          navigate('/SecretaryDashboard'); // ← תיקון
+          break;
+        case 'gymnast':
+        default:
+          navigate('/MyProfile');
       }
     } catch (error) {
       console.error('Verification error:', error);

@@ -14,6 +14,7 @@ export interface MTrainer {
 }
 
 export interface MViewTrainerBL {
+  id: string;
   firstName: string
   lastName: string
   level: string;
