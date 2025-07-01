@@ -8,7 +8,7 @@ import {
   MTrainer,
   MViewStudioClasses,
 } from '../../api/trainerApi';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth,AuthProvider } from '../../context/AuthContext';
 import ToastMessage from '../../components/shared/ToastMessage';
 import { cancelClass, isCancelled } from '../../api/classApi';
 import '../../css/MyProfile.css';
@@ -26,6 +26,7 @@ export default function TrainerProfile() {
   const [message, setMessage] = useState<string | null>(null);
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const { logout } = useAuth();
 
   // מצב ביטול שיעורים לפי ID
   const [cancelledStatus, setCancelledStatus] = useState<Record<number, boolean>>({});
@@ -109,20 +110,24 @@ export default function TrainerProfile() {
     setConfirmDelete(true);
   };
 
-  const confirmDeleteYes = async () => {
-    setConfirmDelete(false);
-    if (!userId) return;
+const confirmDeleteYes = async () => {
+  setConfirmDelete(false);
+  if (!userId) return;
 
-    try {
-      await deleteTrainer(userId);
-      showMessage("Your profile has been deleted.", 'success');
-      setTimeout(() => navigate("/Login"), 1500);
-    } catch (error) {
-      showMessage("Failed to delete profile. Please try again later.", 'error');
-      console.error("Delete error:", error);
-    }
-  };
+  try {
+    await deleteTrainer(userId);
+    showMessage("Your profile has been deleted.", 'success');
 
+    setTimeout(() => {
+      navigate("/Login");
+      setTimeout(() => logout(), 200); 
+    }, 1000);
+
+  } catch (error) {
+    showMessage("Failed to delete profile. Please try again later.", 'error');
+    console.error("Delete error:", error);
+  }
+};
   const confirmDeleteNo = () => {
     setConfirmDelete(false);
   };
@@ -201,31 +206,38 @@ export default function TrainerProfile() {
 
       <hr />
 
-      <h2>Lessons to Deliver</h2>
+      <h2>My Weekly Lessons</h2>
       {lessons.length === 0 ? (
         <p>No lessons assigned yet.</p>
       ) : (
         <ul>
           {lessons.map((lesson) => {
             const isCancelled = cancelledStatus[lesson.id];
-            return (
+            const isPast = new Date(lesson.date) < new Date();
+            return (  
               <li key={lesson.id}>
   <strong>{lesson.name}</strong> | Level: {lesson.level} | Date: {new Date(lesson.date).toLocaleDateString()} {new Date(lesson.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 {isCancelled ? (
-                  <span style={{ color: '#ff9100', fontWeight: 'bold', marginLeft: '10px'  }}>(Cancelled)</span>
-                ) : (
-                  <button
-                    style={{ marginLeft: '10px' }}
-                    onClick={() => handleCancelLesson(lesson.id)}
-                  >
-                    Cancel
-                  </button>
-                )}
+  <span style={{ color: 'gray', marginLeft: '10px' }}>
+                  (Cancelled)
+                </span>
+              ) : isPast ? (
+                <span style={{ color: 'gray', marginLeft: '10px' }}>(Lesson Passed)</span>
+              ) : (
+                <button
+                  style={{ marginLeft: '10px' }}
+                  onClick={() => handleCancelLesson(lesson.id)}
+                >
+                  Cancel
+                </button>
+              )}
+
               </li>
             );
           })}
         </ul>
       )}
+      
 
       {confirmDelete && (
         <div className="confirm-delete-toast">

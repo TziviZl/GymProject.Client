@@ -13,6 +13,7 @@ import { isCancelled } from '../../api/classApi';
 import { useAuth } from '../../context/AuthContext';
 import ToastMessage from '../../components/shared/ToastMessage';
 import '../../css/MyProfile.css';
+import Loader from '../../components/shared/Loader';
 
 export default function MyProfile() {
   const { userId } = useAuth();
@@ -49,7 +50,6 @@ export default function MyProfile() {
         const lessonsRes = await getGymnastLessons(userId, 10);
         setLessons(lessonsRes.data);
 
-        // בדיקת שיעורים שבוטלו
         const cancelledMap: Record<number, boolean> = {};
         await Promise.all(
           lessonsRes.data.map(async (lesson) => {
@@ -133,7 +133,7 @@ export default function MyProfile() {
     setConfirmDelete(false);
   };
 
-  if (loading) return <div className="profile-container">Loading profile...</div>;
+if (loading) return <Loader />;
   if (!user || !editedUser) return <div className="profile-container">User not found</div>;
 
   return (

@@ -11,6 +11,7 @@ import { addGymnastLesson } from "../api/gymnastApi";
 import { getNumOfGymnasts, getTrainerById, MTrainer } from "../api/trainerApi";
 import ToastMessage from "./shared/ToastMessage";
 import "../css/LessonsTable.css";
+import Loader from "./shared/Loader";
 
 const daysOfWeek = [
   "Sunday",
@@ -41,21 +42,26 @@ function getUpcomingWeekDates(): Record<string, string> {
   return dates;
 }
 
-// קומפוננטת תצוגת כפתורים למאמן
 function TrainerButtons({
   lesson,
   onShowGymnasts,
   onCancelLesson,
   isCancelled,
+  isPast,
 }: {
   lesson: MViewStudioClasses;
   onShowGymnasts: (lesson: MViewStudioClasses) => void;
   onCancelLesson: (lessonId: number) => void;
   isCancelled: boolean;
+  isPast: boolean;
 }) {
-  if (isCancelled) {
+  if (isCancelled || isPast) {
     return (
-      <p style={{ color: "#ff6f00", fontWeight: "bold" }}>Cancelled</p>
+      <div className="trainer-buttons">
+        <button className="small-button" disabled>
+          {isCancelled ? "Cancelled" : "Class Passed"}
+        </button>
+      </div>
     );
   }
   return (
@@ -63,12 +69,14 @@ function TrainerButtons({
       <button
         className="small-button"
         onClick={() => onShowGymnasts(lesson)}
+        disabled={isPast}
       >
         Show Gymnasts
       </button>
       <button
         className="small-button"
         onClick={() => onCancelLesson(lesson.id)}
+        disabled={isPast}
         style={{ marginLeft: 10 }}
       >
         Cancel
@@ -151,6 +159,7 @@ export default function LessonsTable() {
         }
 
         setLessons(lessonsData);
+        console.log("Lessons:", lessons);
 
         const fullMap: Record<number, boolean> = {};
         const cancelMap: Record<number, boolean> = {};
@@ -209,6 +218,11 @@ export default function LessonsTable() {
       return;
     }
 
+    if (!lesson.trainerID) {
+      showMessage("Cannot register to a class without a trainer", "error");
+      return;
+    }
+
     try {
       await addGymnastLesson(gymnastId, lesson.id);
       showMessage("Successfully registered!", "success");
@@ -242,7 +256,7 @@ export default function LessonsTable() {
     }
   };
 
-  if (loading) return <div>Loading lessons...</div>;
+  if (loading) return <Loader />;
   if (error) return <div>{error}</div>;
 
   // מארגן את השיעורים לפי יום
@@ -266,11 +280,13 @@ export default function LessonsTable() {
 
             {lessonsByDay[day]?.length ? (
               lessonsByDay[day].map((lesson, idx) => {
+                console.log("Lesson:", lesson);
                 const lessonDateTime = new Date(lesson.date);
-                const isPast = lessonDateTime < new Date();
+                  const isPast = new Date(lesson.date).getTime() < Date.now();
+                  console.log(lesson.date, "is past:", isPast);
                 const isFullLesson = fullStatus[lesson.id];
                 const isCancelledLesson = cancelledStatus[lesson.id];
-                const disabled = isPast || isFullLesson || isCancelledLesson;
+                const disabled = isPast || isFullLesson || isCancelledLesson || !lesson.trainerID;
 
                 if (userType === "trainer" && loggedTrainer) {
                   if (String(lesson.trainerID) === String(loggedTrainer.id)) {
@@ -294,32 +310,33 @@ export default function LessonsTable() {
                           onShowGymnasts={handleShowNumOfGymnasts}
                           onCancelLesson={handleCancelLesson}
                           isCancelled={isCancelledLesson}
+                          isPast={isPast}
                         />
                       </div>
                     );
                   } else {
-                    // שיעור של מאמן אחר
                     return (
-                      <LessonCard
-                        key={idx}
-                        lesson={lesson}
-                        disabled={true}
-                        buttonLabel={
-                          isPast
-                            ? "Class Passed"
-                            : isCancelledLesson
-                            ? "Cancelled"
-                            : isFullLesson
-                            ? "Full"
-                            : "Join"
-                        }
-                        extraNote="Other trainer's lesson"
-                      />
+                      <div className="lesson-card" key={idx}>
+                        <h3>{lesson.name}</h3>
+                        <p>Level: {lesson.level}</p>
+                        <p>
+                          Time:{" "}
+                          {lessonDateTime.toLocaleTimeString("en-GB", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
+                          })}
+                        </p>
+                        <p>Trainer: {lesson.trainerName || "Not Specified"}</p>
+                        <button className="small-button" disabled>
+                          Not your class
+                        </button>
+                      </div>
                     );
                   }
+
                 }
 
-                // משתמש רגיל
                 return (
                   <LessonCard
                     key={idx}
@@ -329,10 +346,10 @@ export default function LessonsTable() {
                       isPast
                         ? "Class Passed"
                         : isCancelledLesson
-                        ? "Cancelled"
-                        : isFullLesson
-                        ? "Full"
-                        : "Join"
+                          ? "Cancelled"
+                          : isFullLesson
+                            ? "Full"
+                            : "Join"
                     }
                     onJoin={() => handleJoinLesson(lesson)}
                   />
