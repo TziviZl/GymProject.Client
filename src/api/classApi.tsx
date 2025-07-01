@@ -9,7 +9,9 @@ export interface MViewStudioClasses {
   trainerID: string; // מזהה המאמן
   trainerName: string; // שם המאמן
   date: string; // או Date, תלוי איך מחזירים מהשרת
-  // ... שדות נוספים אם יש
+   currentNum: number;
+  isCancelled?: boolean;
+  
 }
 
 export const getAllLessons = () => {

@@ -84,11 +84,11 @@ export const addGymnastLesson = (gymnastId: string, studioClassId: number) =>
     params: { gymnastId, studioClassId },
   });
 
-export const removeGymnastFromLesson = (gymnastId: string, studioClass: StudioClass) =>
-  axios.delete(`${BASE_URL}/RemoveGymnastFromLesson`, {
-    data: studioClass, // For DELETE with body
-    params: { gymnastId },
-  });
+// export const removeGymnastFromLesson = (gymnastId: string, studioClass: StudioClass) =>
+//   axios.delete(`${BASE_URL}/RemoveGymnastFromLesson`, {
+//     data: studioClass, // For DELETE with body
+//     params: { gymnastId },
+//   });
 
 export const getGymnastLessons = (gymnastId: string, numOfLesson: number) =>
   axios.get<MViewStudioClasses[]>(`${BASE_URL}/GetGymnastLessons`, {

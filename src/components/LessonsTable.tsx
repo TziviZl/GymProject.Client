@@ -7,7 +7,7 @@ import {
   isCancelled,
   cancelClass,
 } from "../api/classApi";
-import { addGymnastLesson } from "../api/gymnastApi";
+import { addGymnastLesson, removeGymnastFromClass } from "../api/gymnastApi";
 import { getNumOfGymnasts, getTrainerById, MTrainer } from "../api/trainerApi";
 import ToastMessage from "./shared/ToastMessage";
 import "../css/LessonsTable.css";
@@ -124,6 +124,63 @@ function LessonCard({
     </div>
   );
 }
+function ManageGymnastPopup({
+  lessonId,
+  onClose,
+  onSuccess,
+  onError,
+}: {
+  lessonId: number;
+  onClose: () => void;
+  onSuccess: (msg: string) => void;
+  onError: (msg: string) => void;
+}) {
+  const [gymnastId, setGymnastId] = useState("");
+
+  const handleAdd = async () => {
+    try {
+      await addGymnastLesson(gymnastId, lessonId);
+      onSuccess("Gymnast added successfully");
+      onClose();
+    } catch (err: any) {
+      onError(err?.response?.data || "Error adding gymnast");
+    }
+  };
+
+  const handleRemove = async () => {
+    try {
+      await removeGymnastFromClass(gymnastId, lessonId);
+      onSuccess("Gymnast removed successfully");
+      onClose();
+    } catch (err: any) {
+      onError(err?.response?.data || "Error removing gymnast");
+    }
+  };
+
+  return (
+    <div style={{ marginTop: 10 }}>
+      <input
+        type="text"
+        value={gymnastId}
+        onChange={(e) => setGymnastId(e.target.value)}
+        placeholder="Enter Gymnast ID"
+        style={{ padding: "6px", width: "60%", marginBottom: "8px" }}
+      />
+      <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+        <button className="small-button" onClick={handleAdd}>
+          Add
+        </button>
+        <button className="small-button" onClick={handleRemove}>
+          Remove
+        </button>
+        <button className="small-button" onClick={onClose}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
 export default function LessonsTable() {
   const [lessons, setLessons] = useState<MViewStudioClasses[]>([]);
@@ -134,6 +191,7 @@ export default function LessonsTable() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error">("success");
   const [loggedTrainer, setLoggedTrainer] = useState<MTrainer | null>(null);
+  const [manageLessonId, setManageLessonId] = useState<number | null>(null);
 
   const userType = localStorage.getItem("userType");
   const trainerId = localStorage.getItem("userId");
@@ -233,11 +291,20 @@ export default function LessonsTable() {
 
   const handleShowNumOfGymnasts = async (lesson: MViewStudioClasses) => {
     try {
-      if (!loggedTrainer) {
-        showMessage("Trainer data missing", "error");
+      let trainerIdForRequest: string | null = null;
+
+      if (userType === "trainer" && loggedTrainer) {
+        trainerIdForRequest = loggedTrainer.id;
+      } else if (lesson.trainerID) {
+        trainerIdForRequest = lesson.trainerID;
+      }
+
+      if (!trainerIdForRequest) {
+        showMessage("Trainer not assigned for this class", "error");
         return;
       }
-      const res = await getNumOfGymnasts(loggedTrainer.id, lesson.date);
+
+      const res = await getNumOfGymnasts(trainerIdForRequest, lesson.date);
       showMessage(`Number of gymnasts: ${res.data}`, "success");
     } catch (err) {
       showMessage("Failed fetching gymnasts count", "error");
@@ -280,17 +347,53 @@ export default function LessonsTable() {
 
             {lessonsByDay[day]?.length ? (
               lessonsByDay[day].map((lesson, idx) => {
-                console.log("Lesson:", lesson);
                 const lessonDateTime = new Date(lesson.date);
-                  const isPast = new Date(lesson.date).getTime() < Date.now();
-                  console.log(lesson.date, "is past:", isPast);
+                const isPast = lessonDateTime.getTime() < Date.now();
                 const isFullLesson = fullStatus[lesson.id];
                 const isCancelledLesson = cancelledStatus[lesson.id];
                 const disabled = isPast || isFullLesson || isCancelledLesson || !lesson.trainerID;
 
+                if (userType === "secretary") {
+                  return (
+                    <div className="lesson-card" key={idx}>
+                      <h3>{lesson.name}</h3>
+                      <p>Level: {lesson.level}</p>
+                      <p>
+                        Time:{" "}
+                        {lessonDateTime.toLocaleTimeString("en-GB", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: false,
+                        })}
+                      </p>
+                      <p>Trainer: {lesson.trainerName || "Not Specified"}</p>
+
+                      <TrainerButtons
+                        lesson={lesson}
+                        onShowGymnasts={handleShowNumOfGymnasts}
+                        onCancelLesson={handleCancelLesson}
+                        isCancelled={isCancelledLesson}
+                        isPast={isPast}
+
+
+
+                      />
+                      <button
+                        className="small-button"
+                        onClick={() => setManageLessonId(lesson.id)}
+                        disabled={isCancelledLesson || isPast}
+                        style={{ marginTop: 5 }}
+                      >
+                        Manage Gymnasts
+                      </button>
+
+
+                    </div>
+                  );
+                }
+
                 if (userType === "trainer" && loggedTrainer) {
                   if (String(lesson.trainerID) === String(loggedTrainer.id)) {
-                    // שיעור של המאמן עצמו
                     return (
                       <div className="lesson-card" key={idx}>
                         <h3>{lesson.name}</h3>
@@ -334,7 +437,6 @@ export default function LessonsTable() {
                       </div>
                     );
                   }
-
                 }
 
                 return (
@@ -363,6 +465,25 @@ export default function LessonsTable() {
       </div>
 
       {message && <ToastMessage message={message} type={messageType} />}
+      {manageLessonId !== null && (
+  <div
+    className="manage-gymnast-backdrop"
+    onClick={() => setManageLessonId(null)}
+  >
+    <div
+      className="manage-gymnast-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <ManageGymnastPopup
+        lessonId={manageLessonId}
+        onClose={() => setManageLessonId(null)}
+        onSuccess={(msg) => showMessage(msg, "success")}
+        onError={(msg) => showMessage(msg, "error")}
+      />
+    </div>
+  </div>
+)}
+
     </div>
   );
 }

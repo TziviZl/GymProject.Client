@@ -12,6 +12,7 @@ import About from "./components/shared/About";
 import Footer from "./components/shared/Footer";
 import ScrollToTop from "./components/shared/ScrollToTop";
 import TrainerProfile from "./pages/trainer/TrainerProfile";
+import AllClasses from "./pages/admin/Classes/AllClasses"; // תיקון שם הקובץ
 
 import AllTrainers from "./pages/admin/Trainers/AllTrainers";
 
@@ -48,6 +49,7 @@ function App() {
             <Route path="/SecretaryDashboard" element={<SecretaryDashboard />} />
 <            Route path="/ManageGymnasts" element={<AllGymnasts />} />
 <            Route path="/ManageTrainers" element={<AllTrainers />} />
+<Route path="/ManageClasses" element={<AllClasses/>} />
 
             <Route path="TrainerProfile" element={<TrainerProfile />} />
             <Route path="Login" element={<Login />} />
