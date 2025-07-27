@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { storage } from '../utils/storage';
 import '../css/SportBlog.css';
 
 export default function Blog() {
@@ -34,18 +35,25 @@ export default function Blog() {
 
   // טוען את מצב הלבבות מה-LocalStorage בעת הטעינה
   useEffect(() => {
-    const storedFavorites = localStorage.getItem('favoriteArticles');
-    if (storedFavorites) {
-      setFavorites(JSON.parse(storedFavorites));
-    } else {
-      setFavorites(Array(articles.length).fill(false));
-    }
+    const storedFavorites = storage.getFavoriteArticles();
+    const favoritesArray = Array(articles.length).fill(false);
+    Object.keys(storedFavorites).forEach(key => {
+      const index = parseInt(key);
+      if (index < articles.length) {
+        favoritesArray[index] = storedFavorites[index];
+      }
+    });
+    setFavorites(favoritesArray);
   }, []);
 
   // שומר ל-localStorage בכל שינוי
   useEffect(() => {
     if (favorites.length > 0) {
-      localStorage.setItem('favoriteArticles', JSON.stringify(favorites));
+      const favoritesObj: Record<number, boolean> = {};
+      favorites.forEach((fav, index) => {
+        favoritesObj[index] = fav;
+      });
+      storage.setFavoriteArticles(favoritesObj);
     }
   }, [favorites]);
 

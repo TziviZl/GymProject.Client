@@ -4,6 +4,7 @@ import {
   deleteTrainer,
 } from "../../../api/trainerApi";
 import { MViewTrainerBL } from "../../../types";
+import { useErrorHandler } from "../../../hooks/useErrorHandler";
 import ToastMessage from "../../../components/shared/ToastMessage";
 import "../../../css/SecretaryTrainer.css";
 
@@ -18,9 +19,8 @@ export default function SecretaryTrainers() {
   const [trainers, setTrainers] = useState<MViewTrainerBL[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState<"success" | "error">("success");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const { message, messageType, showMessage, showError } = useErrorHandler();
   const [classesWithoutTrainer, setClassesWithoutTrainer] = useState<MViewStudioClass[] | null>(null);
   const [trainerEmails, setTrainerEmails] = useState<string[] | null>(null);
 
@@ -42,11 +42,7 @@ export default function SecretaryTrainers() {
     fetchTrainers();
   }, []);
 
-  const showMessage = (msg: string, type: "success" | "error" = "success") => {
-    setMessage(msg);
-    setMessageType(type);
-    setTimeout(() => setMessage(""), 4000);
-  };
+
 
   const handleDelete = (id: string) => {
     setConfirmDeleteId(id);

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { sendContactMessage } from '../../api/contactApi';
 import { ContactMessage } from '../../types';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../store/hooks';
+import { storage } from '../../utils/storage';
 import { getGymnastById } from '../../api/gymnastApi';
 import '../../css/Contact.css';
 
@@ -44,7 +45,7 @@ export default function Contact() {
     setLoading(true);
     try {
       // שמירה ב-localStorage בינתיים
-      const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+      const messages = storage.getContactMessages();
       const newMessage: ContactMessage = {
         id: Date.now(),
         name,
@@ -53,7 +54,7 @@ export default function Contact() {
         createdAt: new Date().toISOString()
       };
       messages.push(newMessage);
-      localStorage.setItem('contactMessages', JSON.stringify(messages));
+      storage.setContactMessages(messages);
       
       setSuccess('Thank you for contacting us! We will get back to you soon.');
       setName('');

@@ -9,7 +9,8 @@ import {
 } from '../../api/gymnastApi';
 import { MGymnast, MViewStudioClasses } from '../../types';
 import { isCancelled } from '../../api/classApi';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../store/hooks';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 import ToastMessage from '../../components/shared/ToastMessage';
 import '../../css/MyProfile.css';
 import Loader from '../../components/shared/Loader';
@@ -23,16 +24,11 @@ export default function MyProfile() {
   const [cancelledStatus, setCancelledStatus] = useState<Record<number, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
+  const { message, messageType, showMessage, showError, handleError } = useErrorHandler();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmCancelClassId, setConfirmCancelClassId] = useState<number | null>(null);
 
-  const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
-    setMessage(msg);
-    setMessageType(type);
-    setTimeout(() => setMessage(null), 4000);
-  };
+
 
   useEffect(() => {
     if (!userId) {
@@ -81,7 +77,7 @@ export default function MyProfile() {
   const handleSave = async () => {
     if (!editedUser) return;
 
-    // ולידציה לטלפון
+    // Phone validation
     if (editedUser.cell.length < 9 || editedUser.cell.length > 10 || !/^\d+$/.test(editedUser.cell)) {
       showMessage('Phone number must be 9-10 digits', 'error');
       return;
@@ -148,7 +144,7 @@ if (loading) return <Loader />;
 
       {message && <ToastMessage message={message} type={messageType} />}
 
-      {/* טופס פרטים אישיים */}
+      {/* Personal details form */}
       <label>First Name: <input name="firstName" value={editedUser.firstName} onChange={handleChange} disabled={!editing} /></label>
       <label>Last Name: <input name="lastName" value={editedUser.lastName} onChange={handleChange} disabled={!editing} /></label>
       <label>Email: <input name="email" value={editedUser.email} onChange={handleChange} disabled={!editing} /></label>
@@ -170,7 +166,7 @@ if (loading) return <Loader />;
 
       <hr />
 
-      {/* רשימת שיעורים */}
+      {/* Lessons list */}
       <h2>My Lessons</h2>
       {lessons.length === 0 ? (
         <p>You are not enrolled in any lessons yet.</p>
@@ -192,7 +188,7 @@ if (loading) return <Loader />;
         </ul>
       )}
 
-      {/* חלונות אישור */}
+      {/* Confirmation dialogs */}
       {confirmDelete && (
         <div className="confirm-delete-toast">
           <p>Are you sure you want to DELETE your profile? This action cannot be undone.</p>

@@ -7,7 +7,8 @@ import {
   deleteTrainer,
 } from '../../api/trainerApi';
 import { MTrainer, MViewStudioClasses } from '../../types';
-import { useAuth,AuthProvider } from '../../context/AuthContext';
+import { useAuth } from '../../store/hooks';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 import ToastMessage from '../../components/shared/ToastMessage';
 import { cancelClass, isCancelled } from '../../api/classApi';
 import '../../css/MyProfile.css';
@@ -22,19 +23,14 @@ export default function TrainerProfile() {
   const [lessons, setLessons] = useState<MViewStudioClasses[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const { logout } = useAuth();
+  const { message, messageType, showMessage, showError, handleError } = useErrorHandler();
 
   // מצב ביטול שיעורים לפי ID
   const [cancelledStatus, setCancelledStatus] = useState<Record<number, boolean>>({});
 
-  const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
-    setMessage(msg);
-    setMessageType(type);
-    setTimeout(() => setMessage(null), 4000);
-  };
+
 
   useEffect(() => {
     if (!userId) {

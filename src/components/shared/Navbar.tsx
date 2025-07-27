@@ -1,5 +1,5 @@
-import { useAuth } from "../../context/AuthContext";
-import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../store/hooks";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from 'framer-motion';
 import { ROUTES, USER_TYPES } from "../../utils/constants";
 import "../../css/layout.css";
@@ -9,6 +9,7 @@ import "../../css/layout.css";
 function Navbar() {
   const { userId, userType, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handlePersonalAreaClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -37,32 +38,36 @@ function Navbar() {
     <nav className="navbar">
       <ul>
         <motion.li whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Link to={ROUTES.HOME}>Home</Link>
+          <Link to={ROUTES.HOME} className={location.pathname === ROUTES.HOME ? 'active' : ''}>Home</Link>
         </motion.li>
         <motion.li whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Link to={ROUTES.LESSONS}>Lessons</Link>
+          <Link to={ROUTES.LESSONS} className={location.pathname === ROUTES.LESSONS ? 'active' : ''}>Lessons</Link>
         </motion.li>
         {userType === USER_TYPES.SECRETARY ? (
-          <li><Link to={ROUTES.MESSAGES}>View Messages</Link></li>
+          <li><Link to={ROUTES.MESSAGES} className={location.pathname === ROUTES.MESSAGES ? 'active' : ''}>View Messages</Link></li>
         ) : (
-          <li><Link to={ROUTES.CONTACT}>Contact</Link></li>
+          <li><Link to={ROUTES.CONTACT} className={location.pathname === ROUTES.CONTACT ? 'active' : ''}>Contact</Link></li>
         )}
-        <li><Link to={ROUTES.BLOG}>Blog</Link></li>
-        <li><Link to={ROUTES.ABOUT}>About</Link></li>
+        <li><Link to={ROUTES.BLOG} className={location.pathname === ROUTES.BLOG ? 'active' : ''}>Blog</Link></li>
+        <li><Link to={ROUTES.ABOUT} className={location.pathname === ROUTES.ABOUT ? 'active' : ''}>About</Link></li>
 
         {/* Secretary - Full Access */}
         {userType === USER_TYPES.SECRETARY && (
           <>
-            <li><Link to={ROUTES.MANAGE_GYMNASTS}>Manage Gymnasts</Link></li>
-            <li><Link to={ROUTES.MANAGE_TRAINERS}>Manage Trainers</Link></li>
-            <li><Link to={ROUTES.MANAGE_CLASSES}>Manage Classes</Link></li>
+            <li><Link to={ROUTES.MANAGE_GYMNASTS} className={location.pathname === ROUTES.MANAGE_GYMNASTS ? 'active' : ''}>Manage Gymnasts</Link></li>
+            <li><Link to={ROUTES.MANAGE_TRAINERS} className={location.pathname === ROUTES.MANAGE_TRAINERS ? 'active' : ''}>Manage Trainers</Link></li>
+            <li><Link to={ROUTES.MANAGE_CLASSES} className={location.pathname === ROUTES.MANAGE_CLASSES ? 'active' : ''}>Manage Classes</Link></li>
           </>
         )}
 
         {/* Personal Area - לא למזכירה */}
         {userType !== USER_TYPES.SECRETARY && (
           <li>
-            <button className="nav-btn" onClick={handlePersonalAreaClick}>Personal Area</button>
+            <button className={`nav-btn ${(
+              location.pathname === ROUTES.MY_PROFILE || 
+              location.pathname === ROUTES.TRAINER_PROFILE || 
+              location.pathname === ROUTES.SECRETARY_PERSONAL_AREA
+            ) ? 'active' : ''}`} onClick={handlePersonalAreaClick}>Personal Area</button>
           </li>
         )}
 

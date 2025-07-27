@@ -4,6 +4,7 @@ import {
   cancelClass,
 } from "../../../api/classApi";
 import { MViewStudioClasses } from "../../../types";
+import { useErrorHandler } from "../../../hooks/useErrorHandler";
 import "../../../css/SecretaryClasses.css";
 import ToastMessage from "../../../components/shared/ToastMessage";
 
@@ -11,9 +12,8 @@ export default function SecretaryLessons() {
   const [weeklyLessons, setWeeklyLessons] = useState<MViewStudioClasses[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState<"success" | "error">("success");
   const [confirmCancelId, setConfirmCancelId] = useState<number | null>(null);
+  const { message, messageType, showMessage, showError } = useErrorHandler();
 
   useEffect(() => {
     const fetchWeeklyLessons = async () => {
@@ -63,15 +63,13 @@ export default function SecretaryLessons() {
             : lesson
         )
       );
-      setMessage("Lesson was successfully cancelled.");
-      setMessageType("success");
+      showMessage("Lesson was successfully cancelled.", "success");
     } catch (err) {
       console.error("Error cancelling lesson:", err);
-      setMessage("An error occurred while cancelling the lesson.");
-      setMessageType("error");
+      showError(err);
     } finally {
       setConfirmCancelId(null);
-      setTimeout(() => setMessage(""), 4000);
+
     }
   };
 

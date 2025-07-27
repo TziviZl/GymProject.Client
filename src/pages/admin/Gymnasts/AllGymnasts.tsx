@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getAllGymnasts, deleteGymnast } from "../../../api/gymnastApi";
 import { MViewGymnastBL } from "../../../types";
+import { useErrorHandler } from "../../../hooks/useErrorHandler";
 import ToastMessage from "../../../components/shared/ToastMessage";
 import "../../../css/SecretaryGymnast.css";
 
@@ -8,9 +9,8 @@ export default function SecretaryGymnasts() {
   const [gymnasts, setGymnasts] = useState<MViewGymnastBL[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState<"success" | "error">("success");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const { message, messageType, showMessage, showError } = useErrorHandler();
 
   const fetchGymnasts = async () => {
     setLoading(true);
@@ -31,11 +31,7 @@ export default function SecretaryGymnasts() {
     fetchGymnasts();
   }, []);
 
-  const showMessage = (msg: string, type: "success" | "error" = "success") => {
-    setMessage(msg);
-    setMessageType(type);
-    setTimeout(() => setMessage(""), 4000);
-  };
+
 
   // במקום window.confirm - פתיחת חלון אישור
   const handleDelete = (id: string) => {

@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ContactMessage } from '../types';
+import { storage } from '../utils/storage';
 
 export const useMessages = () => {
   return useQuery({
     queryKey: ['messages'],
     queryFn: async () => {
-      const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+      const messages = storage.getContactMessages();
       return messages as ContactMessage[];
     },
   });
@@ -16,9 +17,9 @@ export const useDeleteMessage = () => {
   
   return useMutation({
     mutationFn: async (id: number) => {
-      const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+      const messages = storage.getContactMessages();
       const updatedMessages = messages.filter((msg: ContactMessage) => msg.id !== id);
-      localStorage.setItem('contactMessages', JSON.stringify(updatedMessages));
+      storage.setContactMessages(updatedMessages);
       return id;
     },
     onSuccess: () => {

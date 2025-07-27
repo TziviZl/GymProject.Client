@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../store/hooks';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 import ToastMessage from '../../components/shared/ToastMessage';
 import { sendVerificationCode, verifyCode, getUserType } from '../../api/authApi';
 import { getGymnastById } from '../../api/gymnastApi';
@@ -14,34 +15,28 @@ export default function Login() {
   const [id, setId] = useState('');
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
+  const { message, messageType, showMessage, showError, handleError } = useErrorHandler();
   const [code, setCode] = useState('');
   const [awaitingCode, setAwaitingCode] = useState(false);
 
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
-    setMessage(msg);
-    setMessageType(type);
-    setTimeout(() => setMessage(''), 4000);
-  };
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
-    setMessage('');
     setCode('');
     setAwaitingCode(false);
 
-    // ולידציה לת.ז
+    // ID validation
     if (id.length < 9) {
       setError('ID must be at least 9 digits');
       return;
     }
 
-    // ולידציה לטלפון (9-10 ספרות למזכירה)
+    // Phone validation (9-10 digits for secretary)
     if (phone.length < 9 || phone.length > 10 || !/^\d+$/.test(phone)) {
       setError('Phone number must be 9-10 digits');
       return;
@@ -82,7 +77,7 @@ export default function Login() {
 
       await sendVerificationCode(phone);
       setAwaitingCode(true);
-      showMessage('Verification code sent. Please enter it below.');
+      showMessage('Verification code sent. Please enter it below.', 'success');
     } catch (err: any) {
       console.error('Login error:', err);
       if (err.response?.status === 404) {
@@ -128,7 +123,7 @@ export default function Login() {
       }
     } catch (error) {
       console.error('Verification error:', error);
-      setError('Incorrect verification code or server error.');
+      setError(handleError(error));
     }
   }
 

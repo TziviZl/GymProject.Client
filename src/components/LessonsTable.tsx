@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../store/hooks";
+import { useErrorHandler } from "../hooks/useErrorHandler";
+import { storage } from "../utils/storage";
 import {
   getAllLessons,
   isFull,
@@ -85,7 +88,7 @@ function TrainerButtons({
   );
 }
 
-// קומפוננטת כרטיס שיעור רגילה (למאמן אחר או למשתמש רגיל)
+// Regular lesson card component (for other trainer or regular user)
 function LessonCard({
   lesson,
   disabled,
@@ -184,9 +187,9 @@ function ManageGymnastPopup({
 }
 
 
-// קאש פשוט
+// Simple cache
 const lessonsCache = new Map<string, {data: MViewStudioClasses[], timestamp: number}>();
-const CACHE_DURATION = 2 * 60 * 1000; // 2 דקות
+const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
 
 export default function LessonsTable() {
   const [lessons, setLessons] = useState<MViewStudioClasses[]>([]);
@@ -195,13 +198,11 @@ export default function LessonsTable() {
   const [loading, setLoading] = useState(true);
   const [statusLoading, setStatusLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState<"success" | "error">("success");
+  const { message, messageType, showMessage, showError, handleError } = useErrorHandler();
   const [loggedTrainer, setLoggedTrainer] = useState<MTrainer | null>(null);
   const [manageLessonId, setManageLessonId] = useState<number | null>(null);
 
-  const userType = localStorage.getItem("userType");
-  const trainerId = localStorage.getItem("userId");
+  const { userType, userId: trainerId } = useAuth();
 
   const navigate = useNavigate();
   const weekDates = getUpcomingWeekDates();
@@ -210,7 +211,7 @@ export default function LessonsTable() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // בדיקת קאש
+        // Check cache
         const cacheKey = `lessons_${userType}_${trainerId || 'guest'}`;
         const cached = lessonsCache.get(cacheKey);
         const now = Date.now();
@@ -223,7 +224,7 @@ export default function LessonsTable() {
           lessonsCache.set(cacheKey, { data: lessonsRes.data, timestamp: now });
         }
 
-        // טעינת מאמן אם צריך
+        // Load trainer if needed
         const trainerRes = userType === "trainer" && trainerId ? await getTrainerById(trainerId) : null;
 
         const lessonsData = lessonsRes.data;
@@ -231,17 +232,17 @@ export default function LessonsTable() {
         
         setLessons(lessonsData);
         setError(null);
-        setLoading(false); // מסיים loading מוקדם יותר
+        setLoading(false); // Finish loading earlier
         setStatusLoading(true);
 
-        // טעינת סטטוס רק עבור שיעורים עתידיים
+        // Load status only for future lessons
         const futureLessons = lessonsData.filter(lesson => new Date(lesson.date).getTime() > now);
         
         const batchSize = 5;
         const fullMap: Record<number, boolean> = {};
         const cancelMap: Record<number, boolean> = {};
 
-        // עבור שיעורים שעברו - סטטוס ברירת מחדל
+        // For past lessons - default status
         lessonsData.forEach(lesson => {
           if (new Date(lesson.date).getTime() <= now) {
             fullMap[lesson.id] = false;
@@ -268,7 +269,7 @@ export default function LessonsTable() {
             })
           );
 
-          // עדכון מיידי של הסטטוס
+          // Immediate status update
           setFullStatus(prev => ({ ...prev, ...fullMap }));
           setCancelledStatus(prev => ({ ...prev, ...cancelMap }));
         }
@@ -285,14 +286,10 @@ export default function LessonsTable() {
     fetchData();
   }, [trainerId, userType]);
 
-  const showMessage = (msg: string, type: "success" | "error" = "success") => {
-    setMessage(msg);
-    setMessageType(type);
-    setTimeout(() => setMessage(""), 4000);
-  };
+
 
   const handleJoinLesson = async (lesson: MViewStudioClasses) => {
-    const gymnastId = localStorage.getItem("userId");
+    const gymnastId = storage.getUserId();
     if (!gymnastId) {
       showMessage("Please log in before registering", "error");
       navigate("/Login");
@@ -318,8 +315,7 @@ export default function LessonsTable() {
       await addGymnastLesson(gymnastId, lesson.id);
       showMessage("Successfully registered!", "success");
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.Message || err?.response?.data?.message || err?.response?.data || "Error registering";
-      showMessage(typeof errorMessage === 'string' ? errorMessage : "Error registering", "error");
+      showError(err);
     }
   };
 
@@ -360,7 +356,7 @@ export default function LessonsTable() {
   if (loading) return <Loader />;
   if (error) return <div>{error}</div>;
 
-  // מארגן את השיעורים לפי יום
+  // Organize lessons by day
   const lessonsByDay = lessons.reduce((acc, lesson) => {
     const dayName = daysOfWeek[new Date(lesson.date).getDay()];
     if (!acc[dayName]) acc[dayName] = [];

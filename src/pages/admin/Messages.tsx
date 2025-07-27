@@ -1,23 +1,15 @@
 import React, { useState } from 'react';
 import { ContactMessage } from '../../types';
 import { useMessages, useDeleteMessage } from '../../hooks/useMessages';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 import ToastMessage from '../../components/shared/ToastMessage';
 import '../../css/SecretaryMessages.css';
 
 export default function SecretaryMessages() {
   const { data: messages = [], isLoading: loading, error } = useMessages();
   const deleteMessageMutation = useDeleteMessage();
-  const [toastMessage, setToastMessage] = useState('');
-  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
-
-
-
-  const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
-    setToastMessage(msg);
-    setMessageType(type);
-    setTimeout(() => setToastMessage(''), 4000);
-  };
+  const { message: toastMessage, messageType, showMessage, showError } = useErrorHandler();
 
   const handleDelete = (id: number) => {
     setConfirmDeleteId(id);
@@ -29,8 +21,7 @@ export default function SecretaryMessages() {
       await deleteMessageMutation.mutateAsync(confirmDeleteId);
       showMessage('Message deleted successfully', 'success');
     } catch (err) {
-      showMessage('Failed to delete message', 'error');
-      console.error(err);
+      showError(err);
     } finally {
       setConfirmDeleteId(null);
     }

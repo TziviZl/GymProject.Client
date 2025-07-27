@@ -41,6 +41,21 @@
   transform: translateY(-1px);
 }
 
+/* Active link styling */
+.navbar li a.active,
+.navbar .nav-btn.active {
+  color: #db1463 !important;
+  background-color: transparent !important;
+  font-weight: 600;
+}
+
+.navbar li a.active:hover,
+.navbar .nav-btn.active:hover {
+  color: #e91e63 !important;
+  background-color: #333333 !important;
+  transform: translateY(-1px);
+}
+
 /* כפתורים */
 .logout-btn,
 .nav-btn {

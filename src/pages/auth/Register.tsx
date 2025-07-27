@@ -3,7 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { newGymnast, addMembershipType } from '../../api/gymnastApi';
 import { MGymnast, MembershipTypeEnum } from '../../types';
 import { sendVerificationCode, verifyCode } from '../../api/authApi';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../store/hooks';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { storage } from '../../utils/storage';
 import ToastMessage from '../../components/shared/ToastMessage';
 import '../../css/Register.css';
 
@@ -22,19 +24,21 @@ export default function Register() {
   const [medicalInsurance, setMedicalInsurance] = useState('');
 
   const [membershipType, setMembershipType] = useState<MembershipTypeEnum | null>(() => {
-    const saved = localStorage.getItem('membershipType');
+    const saved = storage.getMembershipType();
     return saved ? Number(saved) : MembershipTypeEnum.monthly_Standard;
   });
 
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
+  const { message, messageType, showMessage, showError, handleError } = useErrorHandler();
   const [awaitingCode, setAwaitingCode] = useState(false);
   const [code, setCode] = useState('');
 
-  const membershipOptions = Object.entries(MembershipTypeEnum)
-    .filter(([key]) => isNaN(Number(key)))
-    .map(([key, value]) => ({ label: key, value }));
+  const membershipOptions = [
+    { label: 'Monthly Standard', value: MembershipTypeEnum.monthly_Standard, price: '300 NIS' },
+    { label: 'Monthly Pro', value: MembershipTypeEnum.monthly_Pro, price: '500 NIS' },
+    { label: 'Yearly Standard', value: MembershipTypeEnum.yearly_Standard, price: '3,000 NIS' },
+    { label: 'Yearly Pro', value: MembershipTypeEnum.yearly_Pro, price: '4,500 NIS' }
+  ];
 
   useEffect(() => {
     if (location.state?.id) {
@@ -42,26 +46,21 @@ export default function Register() {
     }
   }, [location.state?.id]);
 
-  const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
-    setMessage(msg);
-    setMessageType(type);
-    setTimeout(() => setMessage(''), 4000);
-  };
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
-    setMessage('');
     setCode('');
     setAwaitingCode(false);
 
-    // ולידציה לת.ז
+    // ID validation
     if (id.length < 9) {
       setError('ID must be at least 9 digits');
       return;
     }
 
-    // ולידציה לטלפון (9-10 ספרות)
+    // Phone validation (9-10 digits)
     if (phone.length < 9 || phone.length > 10 || !/^\d+$/.test(phone)) {
       setError('Phone number must be 9-10 digits');
       return;
@@ -101,7 +100,7 @@ export default function Register() {
         login(id, 'gymnast');
         if (membershipType !== null) {
           await addMembershipType(membershipType, id);
-          localStorage.setItem('membershipType', membershipType.toString());
+          storage.setMembershipType(membershipType.toString());
         }
         showMessage('Registration successful!', 'success');
         setTimeout(() => navigate('/MyProfile'), 1500);
@@ -110,8 +109,7 @@ export default function Register() {
         setError(text);
       }
     } catch (e: any) {
-      const errorMessage = e.response?.data?.Message || e.response?.data?.message || e.response?.data || 'Communication error or incorrect data';
-      setError(typeof errorMessage === 'string' ? errorMessage : 'Communication error or incorrect data');
+      setError(handleError(e));
     }
   }
 
@@ -201,7 +199,7 @@ export default function Register() {
         </label>
 
         <div className="form-group">
-          <label htmlFor="subscription">Subscription Type:</label>
+          <label htmlFor="subscription">Membership Plan:</label>
           <select
             id="subscription"
             className="form-select"
@@ -209,15 +207,15 @@ export default function Register() {
             onChange={e => {
               const val = Number(e.target.value);
               setMembershipType(val);
-              localStorage.setItem('membershipType', val.toString());
+              storage.setMembershipType(val.toString());
             }}
             required
             disabled={awaitingCode}
           >
-            <option value="">Select a subscription</option>
+            <option value="">Choose your membership plan</option>
             {membershipOptions.map(option => (
               <option key={option.value} value={option.value}>
-                {option.label} - {option.value} NIS
+                {option.label} - {option.price}
               </option>
             ))}
           </select>
