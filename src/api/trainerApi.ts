@@ -1,45 +1,17 @@
 import axios from 'axios';
 import { API_BASE_URL } from '../utils/constants';
+import { MTrainer, MViewTrainerBL, MViewStudioClasses } from '../types';
 
-const BASE_URL = `${API_BASE_URL}/Trainer`; 
+const BASE_URL = `${API_BASE_URL}/Trainer`;
 
-// ממשקים (ניתן להגדיר בקובץ נפרד, לדוגמה: types.ts)
-export interface MTrainer {
+export interface BackupTrainers {
   id: string;
   firstName: string;
   lastName: string;
-  birthDate: string; // או Date
+  birthDate: Date;
   specialization: string;
-    email: string;
-    cell: string;
-}
-
-export interface MViewTrainerBL {
-  id: string;
-  firstName: string
-  lastName: string
-  level: string;
-  nummOfStudioClasses: number;
-}
-
-export interface MViewStudioClasses {
-    id: number; 
-    name: string;
-    level: string;
-    date: Date
-}
-
-export interface BackupTrainers {
-    id: string;
-    firstName: string;
-    lastName: string;
-    birthDate: Date;
-    specialization: string; 
-    email: string;
-    cell: string;
-    
-     // או Date
-  // ... שדות נוספים
+  email: string;
+  cell: string;
 }
 
 export const getNumOfGymnasts = (trainerId: string, courseDate: string) =>

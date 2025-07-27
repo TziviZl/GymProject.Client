@@ -1,14 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { sendContactMessage } from '../../api/contactApi';
+import { ContactMessage } from '../../types';
+import { useAuth } from '../../context/AuthContext';
+import { getGymnastById } from '../../api/gymnastApi';
 import '../../css/Contact.css';
 
 export default function Contact() {
+  const { userId, userType } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (userId && userType === 'gymnast') {
+        try {
+          const response = await getGymnastById(userId);
+          const userData = response.data;
+          setName(`${userData.firstName} ${userData.lastName}`);
+          setEmail(userData.email);
+        } catch (err) {
+          console.error('Failed to load user data:', err);
+        }
+      }
+    };
+
+    loadUserData();
+  }, [userId, userType]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -18,12 +41,29 @@ export default function Contact() {
       return;
     }
 
-    setTimeout(() => {
+    setLoading(true);
+    try {
+      // שמירה ב-localStorage בינתיים
+      const messages = JSON.parse(localStorage.getItem('contactMessages') || '[]');
+      const newMessage: ContactMessage = {
+        id: Date.now(),
+        name,
+        email,
+        message,
+        createdAt: new Date().toISOString()
+      };
+      messages.push(newMessage);
+      localStorage.setItem('contactMessages', JSON.stringify(messages));
+      
       setSuccess('Thank you for contacting us! We will get back to you soon.');
       setName('');
       setEmail('');
       setMessage('');
-    }, 500);
+    } catch (err) {
+      setError('Failed to send message. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -50,6 +90,8 @@ export default function Contact() {
             onChange={e => setEmail(e.target.value)}
             required
             placeholder="your.email@example.com"
+            readOnly={!!userId}
+            style={userId ? { backgroundColor: '#f5f5f5', cursor: 'not-allowed' } : {}}
           />
         </label>
 
@@ -64,7 +106,9 @@ export default function Contact() {
           />
         </label>
 
-        <button type="submit">Send Message</button>
+        <button type="submit" disabled={loading}>
+          {loading ? 'Sending...' : 'Send Message'}
+        </button>
       </form>
 
       {error && <p className="error">{error}</p>}

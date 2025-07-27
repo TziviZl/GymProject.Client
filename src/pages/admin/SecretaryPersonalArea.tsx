@@ -1,14 +1,14 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "../utils/constants";
-import "../css/SecretaryDashboard.css";
+import { ROUTES } from "../../utils/constants";
+import "../../css/SecretaryDashboard.css";
 
-function SecretaryDashboard() {
+function SecretaryPersonalArea() {
   const navigate = useNavigate();
 
   return (
     <div className="secretary-dashboard">
-      <h1>Welcome to the Secretary Dashboard</h1>
+      <h1>Secretary Personal Area</h1>
 
       <div className="dashboard-buttons">
         <button onClick={() => navigate(ROUTES.MANAGE_GYMNASTS)}>
@@ -26,9 +26,13 @@ function SecretaryDashboard() {
         <button onClick={() => navigate(ROUTES.MESSAGES)}>
           View Messages
         </button>
+
+        <button onClick={() => navigate(ROUTES.LESSONS)}>
+          View Lessons
+        </button>
       </div>
     </div>
   );
 }
 
-export default SecretaryDashboard;
+export default SecretaryPersonalArea;

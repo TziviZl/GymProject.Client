@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { getAllGymnasts, deleteGymnast, MViewGymnastBL } from "../../../api/gymnastApi";
+import { getAllGymnasts, deleteGymnast } from "../../../api/gymnastApi";
+import { MViewGymnastBL } from "../../../types";
 import ToastMessage from "../../../components/shared/ToastMessage";
 import "../../../css/SecretaryGymnast.css";
 

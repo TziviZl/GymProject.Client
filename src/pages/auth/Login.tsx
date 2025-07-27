@@ -35,6 +35,18 @@ export default function Login() {
     setCode('');
     setAwaitingCode(false);
 
+    // ולידציה לת.ז
+    if (id.length < 9) {
+      setError('ID must be at least 9 digits');
+      return;
+    }
+
+    // ולידציה לטלפון (9-10 ספרות למזכירה)
+    if (phone.length < 9 || phone.length > 10 || !/^\d+$/.test(phone)) {
+      setError('Phone number must be 9-10 digits');
+      return;
+    }
+
     try {
       const typeRes = await getUserType(id);
       const userTypeRaw = typeRes.data?.toLowerCase().trim();

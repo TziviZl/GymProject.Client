@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   getAllLessons,
-  MViewStudioClasses,
   isFull,
   isCancelled,
   cancelClass,
 } from "../api/classApi";
 import { addGymnastLesson, removeGymnastFromClass } from "../api/gymnastApi";
-import { getNumOfGymnasts, getTrainerById, MTrainer } from "../api/trainerApi";
+import { getNumOfGymnasts, getTrainerById } from "../api/trainerApi";
+import { MViewStudioClasses, MTrainer } from "../types";
 import ToastMessage from "./shared/ToastMessage";
 import "../css/LessonsTable.css";
 import Loader from "./shared/Loader";
@@ -143,7 +143,8 @@ function ManageGymnastPopup({
       onSuccess("Gymnast added successfully");
       onClose();
     } catch (err: any) {
-      onError(err?.response?.data || "Error adding gymnast");
+      const errorMessage = err?.response?.data?.Message || err?.response?.data?.message || err?.response?.data || "Error adding gymnast";
+      onError(typeof errorMessage === 'string' ? errorMessage : "Error adding gymnast");
     }
   };
 
@@ -153,7 +154,8 @@ function ManageGymnastPopup({
       onSuccess("Gymnast removed successfully");
       onClose();
     } catch (err: any) {
-      onError(err?.response?.data || "Error removing gymnast");
+      const errorMessage = err?.response?.data?.Message || err?.response?.data?.message || err?.response?.data || "Error removing gymnast";
+      onError(typeof errorMessage === 'string' ? errorMessage : "Error removing gymnast");
     }
   };
 
@@ -316,7 +318,8 @@ export default function LessonsTable() {
       await addGymnastLesson(gymnastId, lesson.id);
       showMessage("Successfully registered!", "success");
     } catch (err: any) {
-      showMessage(err?.response?.data || "Error registering", "error");
+      const errorMessage = err?.response?.data?.Message || err?.response?.data?.message || err?.response?.data || "Error registering";
+      showMessage(typeof errorMessage === 'string' ? errorMessage : "Error registering", "error");
     }
   };
 

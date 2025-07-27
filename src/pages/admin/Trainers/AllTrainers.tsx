@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import {
   getAllTrainers,
   deleteTrainer,
-  MViewTrainerBL,
 } from "../../../api/trainerApi";
+import { MViewTrainerBL } from "../../../types";
 import ToastMessage from "../../../components/shared/ToastMessage";
 import "../../../css/SecretaryTrainer.css";
 

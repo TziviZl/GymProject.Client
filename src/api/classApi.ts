@@ -1,19 +1,8 @@
 import axios from "axios";
 import { API_BASE_URL } from '../utils/constants';
+import { MViewStudioClasses } from '../types';
 
 const BASE_URL = `${API_BASE_URL}/StudioClass`;
-
-export interface MViewStudioClasses {
-  id: number; // או string, תלוי איך מחזירים מהשרת
-  name: string;
-  level: string;
-  trainerID: string; // מזהה המאמן
-  trainerName: string; // שם המאמן
-  date: string; // או Date, תלוי איך מחזירים מהשרת
-   currentNum: number;
-  isCancelled?: boolean;
-  
-}
 
 export const getAllLessons = () => {
   return axios.get<MViewStudioClasses[]>(`${BASE_URL}/GetAllLessons`);

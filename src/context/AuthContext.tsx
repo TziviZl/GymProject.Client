@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-
-type UserType = 'gymnast' | 'trainer' | 'secretary' | null;
+import { UserType } from '../types';
 
 interface AuthContextType {
   userId: string | null;

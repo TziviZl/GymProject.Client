@@ -1,17 +1,15 @@
 import axios from "axios";
 import { API_BASE_URL } from '../utils/constants';
+import { BackupTrainers } from "./trainerApi";
 import {
   MGymnast,
   MViewGymnastBL,
   MembershipTypeEnum,
   StudioClass,
-  MViewStudioClasses
-} from "./gymnastApi";
-import {
+  MViewStudioClasses,
   MTrainer,
-  MViewTrainerBL,
-  BackupTrainers
-} from "./trainerApi";
+  MViewTrainerBL
+} from "../types";
 
 const GYMNAST_URL = `${API_BASE_URL}/Gymnast`;
 const STUDIO_URL = `${API_BASE_URL}/StudioClass`;

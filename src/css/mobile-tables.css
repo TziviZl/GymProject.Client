@@ -1,0 +1,33 @@
+/* Mobile responsive tables */
+.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 10px 0;
+}
+
+.table-container table {
+  min-width: 600px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .table-container {
+    margin: 5px -15px;
+    padding: 0 15px;
+  }
+  
+  .table-container table {
+    font-size: 14px;
+  }
+  
+  .table-container th,
+  .table-container td {
+    padding: 8px 4px;
+    white-space: nowrap;
+  }
+  
+  .small-button {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+}

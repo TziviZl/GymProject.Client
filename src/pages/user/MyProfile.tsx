@@ -4,11 +4,10 @@ import {
   getGymnastById,
   updateGymnast,
   deleteGymnast,
-  MGymnast,
   getGymnastLessons,
-  MViewStudioClasses,
   removeGymnastFromClass,
 } from '../../api/gymnastApi';
+import { MGymnast, MViewStudioClasses } from '../../types';
 import { isCancelled } from '../../api/classApi';
 import { useAuth } from '../../context/AuthContext';
 import ToastMessage from '../../components/shared/ToastMessage';
@@ -81,6 +80,13 @@ export default function MyProfile() {
 
   const handleSave = async () => {
     if (!editedUser) return;
+
+    // ולידציה לטלפון
+    if (editedUser.cell.length < 9 || editedUser.cell.length > 10 || !/^\d+$/.test(editedUser.cell)) {
+      showMessage('Phone number must be 9-10 digits', 'error');
+      return;
+    }
+
     try {
       const { memberShipType, weeklyCounter, ...dataToUpdate } = editedUser as any;
       const res = await updateGymnast(dataToUpdate);

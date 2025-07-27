@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import {
   getAllLessons,
   cancelClass,
-  MViewStudioClasses,
 } from "../../../api/classApi";
+import { MViewStudioClasses } from "../../../types";
 import "../../../css/SecretaryClasses.css";
 import ToastMessage from "../../../components/shared/ToastMessage";
 

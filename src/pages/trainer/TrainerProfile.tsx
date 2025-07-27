@@ -5,9 +5,8 @@ import {
   getTrainerStudioClasses,
   updateTrainer,
   deleteTrainer,
-  MTrainer,
-  MViewStudioClasses,
 } from '../../api/trainerApi';
+import { MTrainer, MViewStudioClasses } from '../../types';
 import { useAuth,AuthProvider } from '../../context/AuthContext';
 import ToastMessage from '../../components/shared/ToastMessage';
 import { cancelClass, isCancelled } from '../../api/classApi';
@@ -94,6 +93,12 @@ export default function TrainerProfile() {
 
   const handleSave = async () => {
     if (!editedTrainer) return;
+
+    // ולידציה לטלפון
+    if (editedTrainer.cell.length < 9 || editedTrainer.cell.length > 10 || !/^\d+$/.test(editedTrainer.cell)) {
+      showMessage('Phone number must be 9-10 digits', 'error');
+      return;
+    }
 
     try {
       const res = await updateTrainer(editedTrainer);

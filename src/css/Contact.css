@@ -1,7 +1,7 @@
 .contact-container {
   max-width: 520px;
-  margin: 60px auto;
-  padding: 2.5rem;
+  margin: 20px auto;
+  padding: 1.5rem;
   background: linear-gradient(135deg, #ffffff 0%, #fdf2f8 100%);
   color: #831843;
   border-radius: 20px;
@@ -9,6 +9,21 @@
   border: 2px solid #f9a8d4;
   position: relative;
   overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .contact-container {
+    margin: 60px auto;
+    padding: 2.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-container {
+    margin: 10px;
+    padding: 1rem;
+    border-radius: 15px;
+  }
 }
 
 
@@ -91,7 +106,7 @@
 
 .contact-container .success {
   margin-top: 1rem;
-  color: #4caf50;
+  color: #ec4899;
   text-align: center;
   font-weight: bold;
 }

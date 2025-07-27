@@ -1,5 +1,6 @@
 import { useAuth } from "../../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from 'framer-motion';
 import { ROUTES, USER_TYPES } from "../../utils/constants";
 import "../../css/layout.css";
 
@@ -25,7 +26,7 @@ function Navbar() {
         navigate(ROUTES.TRAINER_PROFILE);
         break;
       case USER_TYPES.SECRETARY:
-        navigate(ROUTES.SECRETARY_DASHBOARD);
+        navigate(ROUTES.SECRETARY_PERSONAL_AREA);
         break;
       default:
         navigate(ROUTES.LOGIN);
@@ -35,9 +36,17 @@ function Navbar() {
   return (
     <nav className="navbar">
       <ul>
-        <li><Link to={ROUTES.HOME}>Home</Link></li>
-        <li><Link to={ROUTES.LESSONS}>Lessons</Link></li>
-        <li><Link to={ROUTES.CONTACT}>Contact</Link></li>
+        <motion.li whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Link to={ROUTES.HOME}>Home</Link>
+        </motion.li>
+        <motion.li whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Link to={ROUTES.LESSONS}>Lessons</Link>
+        </motion.li>
+        {userType === USER_TYPES.SECRETARY ? (
+          <li><Link to={ROUTES.MESSAGES}>View Messages</Link></li>
+        ) : (
+          <li><Link to={ROUTES.CONTACT}>Contact</Link></li>
+        )}
         <li><Link to={ROUTES.BLOG}>Blog</Link></li>
         <li><Link to={ROUTES.ABOUT}>About</Link></li>
 

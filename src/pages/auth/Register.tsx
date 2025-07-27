@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { newGymnast, MGymnast, addMembershipType, MembershipTypeEnum } from '../../api/gymnastApi';
+import { newGymnast, addMembershipType } from '../../api/gymnastApi';
+import { MGymnast, MembershipTypeEnum } from '../../types';
 import { sendVerificationCode, verifyCode } from '../../api/authApi';
 import { useAuth } from '../../context/AuthContext';
 import ToastMessage from '../../components/shared/ToastMessage';
@@ -54,6 +55,18 @@ export default function Register() {
     setCode('');
     setAwaitingCode(false);
 
+    // ולידציה לת.ז
+    if (id.length < 9) {
+      setError('ID must be at least 9 digits');
+      return;
+    }
+
+    // ולידציה לטלפון (9-10 ספרות)
+    if (phone.length < 9 || phone.length > 10 || !/^\d+$/.test(phone)) {
+      setError('Phone number must be 9-10 digits');
+      return;
+    }
+
     try {
       await sendVerificationCode(phone);
       setAwaitingCode(true);
@@ -97,7 +110,8 @@ export default function Register() {
         setError(text);
       }
     } catch (e: any) {
-      setError(e.response?.data || 'Communication error or incorrect data');
+      const errorMessage = e.response?.data?.Message || e.response?.data?.message || e.response?.data || 'Communication error or incorrect data';
+      setError(typeof errorMessage === 'string' ? errorMessage : 'Communication error or incorrect data');
     }
   }
 
