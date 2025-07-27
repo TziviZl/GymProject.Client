@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../utils/constants';
 
-const BASE_URL = 'http://localhost:5281/api/Trainer'; 
+const BASE_URL = `${API_BASE_URL}/Trainer`; 
 
 // ממשקים (ניתן להגדיר בקובץ נפרד, לדוגמה: types.ts)
 export interface MTrainer {

@@ -88,7 +88,7 @@ export default function SecretaryTrainers() {
 
   return (
     <div className="contact-container">
-      <h1>List of All Trainers</h1>
+      <h1>All Trainers</h1>
 
       {trainers.length === 0 ? (
         <p>No trainers found in the system.</p>
@@ -99,7 +99,7 @@ export default function SecretaryTrainers() {
               <div>
                 <strong>{trainer.firstName} {trainer.lastName}</strong>
               </div>
-              <button onClick={() => handleDelete(trainer.id)}>🗑 Delete Trainer</button>
+              <button onClick={() => handleDelete(trainer.id)}>🗑 Delete</button>
             </div>
           ))}
         </div>

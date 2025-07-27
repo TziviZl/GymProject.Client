@@ -182,11 +182,16 @@ function ManageGymnastPopup({
 }
 
 
+// קאש פשוט
+const lessonsCache = new Map<string, {data: MViewStudioClasses[], timestamp: number}>();
+const CACHE_DURATION = 2 * 60 * 1000; // 2 דקות
+
 export default function LessonsTable() {
   const [lessons, setLessons] = useState<MViewStudioClasses[]>([]);
   const [fullStatus, setFullStatus] = useState<Record<number, boolean>>({});
   const [cancelledStatus, setCancelledStatus] = useState<Record<number, boolean>>({});
   const [loading, setLoading] = useState(true);
+  const [statusLoading, setStatusLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error">("success");
@@ -203,49 +208,75 @@ export default function LessonsTable() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        let lessonsData: MViewStudioClasses[] = [];
-
-        if (userType === "trainer" && trainerId) {
-          const trainerRes = await getTrainerById(trainerId);
-          setLoggedTrainer(trainerRes.data);
-
-          const lessonsRes = await getAllLessons();
-          lessonsData = lessonsRes.data;
+        // בדיקת קאש
+        const cacheKey = `lessons_${userType}_${trainerId || 'guest'}`;
+        const cached = lessonsCache.get(cacheKey);
+        const now = Date.now();
+        
+        let lessonsRes;
+        if (cached && (now - cached.timestamp) < CACHE_DURATION) {
+          lessonsRes = { data: cached.data };
         } else {
-          const lessonsRes = await getAllLessons();
-          lessonsData = lessonsRes.data;
+          lessonsRes = await getAllLessons();
+          lessonsCache.set(cacheKey, { data: lessonsRes.data, timestamp: now });
         }
 
-        setLessons(lessonsData);
-        console.log("Lessons:", lessons);
+        // טעינת מאמן אם צריך
+        const trainerRes = userType === "trainer" && trainerId ? await getTrainerById(trainerId) : null;
 
+        const lessonsData = lessonsRes.data;
+        if (trainerRes) setLoggedTrainer(trainerRes.data);
+        
+        setLessons(lessonsData);
+        setError(null);
+        setLoading(false); // מסיים loading מוקדם יותר
+        setStatusLoading(true);
+
+        // טעינת סטטוס רק עבור שיעורים עתידיים
+        const futureLessons = lessonsData.filter(lesson => new Date(lesson.date).getTime() > now);
+        
+        const batchSize = 5;
         const fullMap: Record<number, boolean> = {};
         const cancelMap: Record<number, boolean> = {};
 
-        await Promise.all(
-          lessonsData.map(async (lesson) => {
-            try {
-              const [fullRes, cancelRes] = await Promise.all([
-                isFull(lesson.id),
-                isCancelled(lesson.id),
-              ]);
-              fullMap[lesson.id] = fullRes.data;
-              cancelMap[lesson.id] = cancelRes.data;
-            } catch {
-              fullMap[lesson.id] = false;
-              cancelMap[lesson.id] = false;
-            }
-          })
-        );
+        // עבור שיעורים שעברו - סטטוס ברירת מחדל
+        lessonsData.forEach(lesson => {
+          if (new Date(lesson.date).getTime() <= now) {
+            fullMap[lesson.id] = false;
+            cancelMap[lesson.id] = false;
+          }
+        });
 
-        setFullStatus(fullMap);
-        setCancelledStatus(cancelMap);
-        setError(null);
+        for (let i = 0; i < futureLessons.length; i += batchSize) {
+          const batch = futureLessons.slice(i, i + batchSize);
+          
+          await Promise.all(
+            batch.map(async (lesson) => {
+              try {
+                const [fullRes, cancelRes] = await Promise.all([
+                  isFull(lesson.id),
+                  isCancelled(lesson.id),
+                ]);
+                fullMap[lesson.id] = fullRes.data;
+                cancelMap[lesson.id] = cancelRes.data;
+              } catch {
+                fullMap[lesson.id] = false;
+                cancelMap[lesson.id] = false;
+              }
+            })
+          );
+
+          // עדכון מיידי של הסטטוס
+          setFullStatus(prev => ({ ...prev, ...fullMap }));
+          setCancelledStatus(prev => ({ ...prev, ...cancelMap }));
+        }
+        
+        setStatusLoading(false);
       } catch (err) {
         setError("Failed loading lessons");
         console.error(err);
-      } finally {
         setLoading(false);
+        setStatusLoading(false);
       }
     };
 
@@ -336,7 +367,10 @@ export default function LessonsTable() {
 
   return (
     <div className="lessons-container">
-      <h2 className="lessons-title">Studio Lesson Schedule</h2>
+      <h2 className="lessons-title">
+        Studio Lesson Schedule
+        {statusLoading && <span style={{fontSize: '14px', color: '#666'}}> (Loading status...)</span>}
+      </h2>
 
       <div className="lessons-list">
         {daysOfWeek.map((day) => (
@@ -352,6 +386,7 @@ export default function LessonsTable() {
                 const isFullLesson = fullStatus[lesson.id];
                 const isCancelledLesson = cancelledStatus[lesson.id];
                 const disabled = isPast || isFullLesson || isCancelledLesson || !lesson.trainerID;
+                const showStatusLoader = statusLoading && !fullStatus.hasOwnProperty(lesson.id);
 
                 if (userType === "secretary") {
                   return (

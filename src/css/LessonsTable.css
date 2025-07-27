@@ -1,119 +1,141 @@
 .lessons-container {
-  max-width: 1600px;
-  padding: 40px 20px;
+  max-width: 95vw;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1rem;
   text-align: center;
-  background: #111;
-  color: white;
+  background: transparent;
+  color: #334155;
+  overflow-x: hidden;
 }
 
 .lessons-title {
-  font-size: 2.4rem;
-  font-weight: 900;
-  color: #ffa726;
-  margin-bottom: 30px;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #db1463;
+  margin-bottom: 3rem;
+  text-align: center;
+  text-shadow: 3px 3px 6px rgba(219, 20, 99, 0.5);
+  letter-spacing: 1px;
 }
 
 .lessons-list {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
   direction: ltr;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  align-items: start;
+  align-items: stretch;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .lesson-column {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  /* הסרנו height: 100% כדי לא לכפות גובה אחיד */
+  gap: 20px;
+  align-items: stretch;
+  height: fit-content;
+}
+
+.lesson-column h3 {
+  color: #db1463;
 }
 
 .lesson-card {
-  background: #1c1c1c;
+  background: white;
   border-radius: 12px;
-  box-shadow: 0 0 10px rgba(255, 102, 0, 0.4);
-  padding: 18px 20px;
-  text-align: right;
-  color: white;
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
-  border: 1px solid #ff6f00;
-  min-height: 260px;
-  max-height: 280px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  text-align: center;
+  color: #334155;
+  transition: all 0.2s ease;
+  border: 1px solid #e2e8f0;
+  min-height: 350px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .lesson-card:hover {
-  box-shadow: 0 0 16px rgba(255, 165, 0, 0.8);
-  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  border-color: #db1463;
 }
 
 .lesson-card h3 {
-  margin: 0 0 10px 0;
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #ffa726;
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #db1463;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .lesson-card p {
-  margin: 6px 0;
-  font-weight: 500;
-  font-size: 1rem;
-  color: #ddd;
+  margin: 0.5rem 0;
+  font-weight: 400;
+  font-size: 0.9rem;
+  color: #831843;
 }
 
 /* כפתורים רגילים של שיעור */
 .lesson-card button {
-  background: #ff6f00;
+  background: linear-gradient(135deg, #db1463, #e91e63);
   color: white;
   border: none;
-  padding: 10px 24px;
-  border-radius: 25px;
-  font-weight: 600;
-  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  margin-top: 14px;
+  transition: all 0.2s ease;
+  margin-top: 1rem;
   width: 100%;
 }
 
 .lesson-card button:hover {
-  background: #ff9100;
-  box-shadow: 0 4px 15px rgba(255, 145, 0, 0.6);
+  background: linear-gradient(135deg, #be185d, #db1463);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(219, 20, 99, 0.3);
 }
 
 .lesson-card button:disabled {
-  background: #555;
+  background: #94a3b8;
   cursor: not-allowed;
   opacity: 0.6;
+  transform: none;
+  box-shadow: none;
 }
 
 .lesson-card .small-button {
-  background: #ff6f00;
-  padding: 6px 14px;
-  font-size: 0.85rem;
-  border-radius: 20px;
-  font-weight: 600;
+  background: linear-gradient(135deg, #db1463, #e91e63);
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  font-weight: 500;
   cursor: pointer;
   border: none;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  margin-top: 0;
-  margin-right: 8px;
+  color: white;
+  transition: all 0.2s ease;
+  margin: 0.25rem;
 }
 
 .lesson-card .small-button:hover {
-  background: #ff9100;
-  box-shadow: 0 3px 10px rgba(255, 145, 0, 0.6);
+  background: linear-gradient(135deg, #be185d, #db1463);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(219, 20, 99, 0.3);
 }
 
 .lesson-card .small-button:disabled {
-  background: #555;
+  background: #94a3b8;
   cursor: not-allowed;
   opacity: 0.6;
+  transform: none;
+  box-shadow: none;
 }
 
 .lesson-card .trainer-buttons {
@@ -142,8 +164,9 @@
 .manage-gymnast-backdrop {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.6);
   z-index: 1000;
+  backdrop-filter: blur(5px);
 }
 
 .manage-gymnast-modal {
@@ -151,12 +174,57 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: #222;
-  padding: 20px 30px;
-  border-radius: 10px;
-  box-shadow: 0 0 20px #ff6f00;
-  color: white;
+  background: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 0 50px rgba(219, 20, 99, 0.4), 0 20px 40px rgba(0, 0, 0, 0.2);
+  color: #831843;
   z-index: 1100;
-  width: 320px;
+  width: 400px;
   text-align: center;
+  border: 3px solid #db1463;
+  animation: popIn 0.3s ease-out;
+}
+
+.manage-gymnast-modal h3 {
+  color: #db1463;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.manage-gymnast-modal input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #f9a8d4;
+  border-radius: 12px;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+}
+
+.manage-gymnast-modal input:focus {
+  outline: none;
+  border-color: #db1463;
+  box-shadow: 0 0 0 3px rgba(219, 20, 99, 0.1);
+}
+
+.manage-gymnast-modal button {
+  background: linear-gradient(135deg, #db1463, #e91e63);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  margin: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(219, 20, 99, 0.3);
+}
+
+.manage-gymnast-modal button:hover {
+  background: linear-gradient(135deg, #be185d, #db1463);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(219, 20, 99, 0.4);
 }

@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import "../css/SecretaryDashboard.css"; // אם יש לך קובץ עיצוב, לא חובה
+import { ROUTES } from "../utils/constants";
+import "../css/SecretaryDashboard.css";
 
 function SecretaryDashboard() {
   const navigate = useNavigate();
@@ -10,28 +11,16 @@ function SecretaryDashboard() {
       <h1>Welcome to the Secretary Dashboard</h1>
 
       <div className="dashboard-buttons">
-        <button onClick={() => navigate("/ManageGymnasts")}>
+        <button onClick={() => navigate(ROUTES.MANAGE_GYMNASTS)}>
           Manage Gymnasts
         </button>
 
-        <button onClick={() => navigate("/ManageTrainers")}>
+        <button onClick={() => navigate(ROUTES.MANAGE_TRAINERS)}>
           Manage Trainers
         </button>
 
-        <button onClick={() => navigate("/ManageClasses")}>
+        <button onClick={() => navigate(ROUTES.MANAGE_CLASSES)}>
           Manage Classes
-        </button>
-
-        <button onClick={() => navigate("/AssignGymnastToClass")}>
-          Assign Gymnast to Class
-        </button>
-
-        <button onClick={() => navigate("/RemoveGymnastFromClass")}>
-          Remove Gymnast from Class
-        </button>
-
-        <button onClick={() => navigate("/Reports")}>
-          Reports
         </button>
       </div>
     </div>

@@ -1,18 +1,25 @@
 .contact-container {
-  max-width: 500px;
-  margin: 80px auto;
-  padding: 2rem;
-  background-color: #1e1e1e;
-  color: #f2f2f2;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  max-width: 520px;
+  margin: 60px auto;
+  padding: 2.5rem;
+  background: linear-gradient(135deg, #ffffff 0%, #fdf2f8 100%);
+  color: #831843;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(236, 72, 153, 0.2);
+  border: 2px solid #f9a8d4;
+  position: relative;
+  overflow: hidden;
 }
+
+
 
 .contact-container h1 {
   text-align: center;
-  margin-bottom: 1.5rem;
-  color: #ff9100;
+  margin-bottom: 2rem;
+  color: #db1463;
+  font-size: 2rem;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(219, 20, 99, 0.1);
 }
 
 .contact-container form {
@@ -30,38 +37,50 @@
 
 .contact-container input,
 .contact-container textarea {
-  padding: 0.6rem 0.8rem;
-  border-radius: 8px;
-  border: 1px solid #444;
-  background-color: #2c2c2c;
-  color: #fff;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 2px solid #f9a8d4;
+  background: white;
+  color: #831843;
   font-size: 1rem;
   resize: vertical;
+  transition: all 0.3s ease;
 }
 
 .contact-container input:focus,
 .contact-container textarea:focus {
   outline: none;
-  border-color: #ff9100;
-  background-color: #333;
+  border-color: #db1463;
+  box-shadow: 0 0 0 4px rgba(219, 20, 99, 0.1);
+  transform: translateY(-2px);
 }
 
 .contact-container button {
-  margin-top: 1rem;
-  padding: 0.7rem;
-  background-color: #ff9100;
+  margin-top: 1.5rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #db1463, #e91e63);
   border: none;
-  border-radius: 8px;
-  color: #000;
-  font-weight: bold;
-  font-size: 1rem;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  font-size: 1.1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
 }
 
+
+
 .contact-container button:hover {
-  background-color: #ffaa33;
+  background: linear-gradient(135deg, #be185d, #db1463);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(219, 20, 99, 0.4);
 }
+
+
 
 .contact-container .error {
   margin-top: 1rem;

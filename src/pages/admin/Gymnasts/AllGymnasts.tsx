@@ -76,7 +76,7 @@ export default function SecretaryGymnasts() {
               <div>
                 <strong>{gymnast.firstName} {gymnast.lastName}</strong>
               </div>
-              <button onClick={() => handleDelete(gymnast.id)}>Delete</button>
+              <button onClick={() => handleDelete(gymnast.id)}>🗑 Delete</button>
             </div>
           ))}
         </div>

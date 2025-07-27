@@ -1,4 +1,5 @@
 import axios from "axios";
+import { API_BASE_URL } from '../utils/constants';
 import {
   MGymnast,
   MViewGymnastBL,
@@ -12,9 +13,9 @@ import {
   BackupTrainers
 } from "./trainerApi";
 
-const GYMNAST_URL = 'http://localhost:5281/api/Gymnast';
-const STUDIO_URL = 'http://localhost:5281/api/StudioClass';
-const TRAINER_URL = 'http://localhost:5281/api/Trainer';
+const GYMNAST_URL = `${API_BASE_URL}/Gymnast`;
+const STUDIO_URL = `${API_BASE_URL}/StudioClass`;
+const TRAINER_URL = `${API_BASE_URL}/Trainer`;
 
 // ===================== GYMNASTS =====================
 

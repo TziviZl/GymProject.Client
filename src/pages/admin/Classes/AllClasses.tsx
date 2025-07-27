@@ -4,7 +4,7 @@ import {
   cancelClass,
   MViewStudioClasses,
 } from "../../../api/classApi";
-import "../../../css/SecretaryLessons.css";
+import "../../../css/SecretaryClasses.css";
 import ToastMessage from "../../../components/shared/ToastMessage";
 
 export default function SecretaryLessons() {
@@ -21,26 +21,9 @@ export default function SecretaryLessons() {
       try {
         const res = await getAllLessons();
 
-        const today = new Date();
-        const sundayIndex = today.getDay() === 0 ? -6 : 1 - today.getDay();
-        const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() + sundayIndex);
-        startOfWeek.setHours(0, 0, 0, 0);
-
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6);
-        endOfWeek.setHours(23, 59, 59, 999);
-
-        const now = new Date(); 
-
-
-        const filtered = res.data.filter((lesson) => {
-          const lessonDate = new Date(lesson.date);
-          return lessonDate >= startOfWeek && lessonDate <= endOfWeek && lessonDate > now;
-        });
-
-        filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        setWeeklyLessons(filtered);
+        const allLessons = res.data;
+        allLessons.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        setWeeklyLessons(allLessons);
         setError(null);
       } catch (err) {
         console.error("Error loading lessons:", err);
@@ -96,12 +79,12 @@ export default function SecretaryLessons() {
     setConfirmCancelId(null);
   };
 
-  if (loading) return <div className="contact-container">Loading lessons...</div>;
+  if (loading) return <div className="contact-container">Loading classes...</div>;
   if (error) return <div className="contact-container error">{error}</div>;
 
   return (
     <div className="contact-container">
-      <h1>This Week's Lessons</h1>
+      <h1>All Classes</h1>
 
       {confirmCancelId !== null && (
         <div className="confirm-delete-toast">
@@ -112,16 +95,16 @@ export default function SecretaryLessons() {
       )}
 
       {weeklyLessons.length === 0 ? (
-        <p>No lessons found for this week.</p>
+        <p>No classes found.</p>
       ) : (
-        <div className="lesson-list">
+        <div className="class-list">
           {weeklyLessons.map((lesson) => {
             const isPast = new Date(lesson.date) < new Date();
             const isCancelled = (lesson as any).isCancelled;
 
             return (
               <div
-                className={`lesson-card ${isPast ? "past" : ""} ${isCancelled ? "cancelled" : ""}`}
+                className={`class-card ${isPast ? "past" : ""} ${isCancelled ? "cancelled" : ""}`}
                 key={lesson.id}
               >
                 <div>
@@ -134,7 +117,7 @@ export default function SecretaryLessons() {
 
                 {!isCancelled && (
                   <button onClick={(e) => { e.stopPropagation(); handleCancel(lesson.id); }}>
-                    ❌ Cancel Lesson
+                    🗑 DELETE
                   </button>
                 )}
               </div>

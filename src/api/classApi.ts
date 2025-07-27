@@ -1,6 +1,7 @@
 import axios from "axios";
+import { API_BASE_URL } from '../utils/constants';
 
-const BASE_URL = "http://localhost:5281/api/StudioClass"; // כתובת ה-API שלך
+const BASE_URL = `${API_BASE_URL}/StudioClass`;
 
 export interface MViewStudioClasses {
   id: number; // או string, תלוי איך מחזירים מהשרת

@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../utils/constants';
 
-const BASE_URL = 'http://localhost:5281/api/Gymnast'; 
+const BASE_URL = `${API_BASE_URL}/Gymnast`; 
 export interface MGymnast {
   id: string;
   firstName: string;

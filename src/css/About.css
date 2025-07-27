@@ -1,27 +1,41 @@
 .about-grid-container {
   max-width: 1200px;
-  margin: 80px auto;
-  padding: 2rem;
-  background-color: #1e1e1e;
-  color: #f2f2f2;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 60px auto;
+  padding: 3rem;
+  background: linear-gradient(135deg, #ffffff 0%, #fdf2f8 100%);
+  color: #831843;
+  border-radius: 20px;
+  box-shadow: 0 15px 35px rgba(236, 72, 153, 0.2);
+  border: 2px solid #f9a8d4;
+  position: relative;
+  overflow: hidden;
 }
+
+
 
 .about-grid-container h1 {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
   font-size: 2.5rem;
-  color: #ff9100;
+  color: #db1463;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(219, 20, 99, 0.1);
+  position: relative;
 }
+
+
 
 .about-intro {
   text-align: center;
-  font-size: 1.1rem;
-  line-height: 1.6;
+  font-size: 1.2rem;
+  line-height: 1.7;
   margin-bottom: 3rem;
-  color: #ddd;
+  color: #831843;
+  font-weight: 500;
+  background: rgba(236, 72, 153, 0.05);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border-left: 4px solid #ec4899;
 }
 
 .about-grid {
@@ -31,26 +45,36 @@
 }
 
 .about-card {
-  background-color: #2c2c2c;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(236, 72, 153, 0.1);
+  transition: all 0.3s ease;
+  border: 2px solid #f9a8d4;
+  position: relative;
+  overflow: hidden;
 }
 
+
+
 .about-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.7);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 15px 30px rgba(236, 72, 153, 0.3);
+  border-color: #ec4899;
 }
 
 .about-card h2 {
-  color: #ffaa33;
-  margin-bottom: 0.8rem;
+  color: #db1463;
+  margin-bottom: 1rem;
   font-size: 1.4rem;
+  font-weight: 600;
+  position: relative;
 }
 
+
+
 .about-card p {
-  color: #ddd;
-  font-size: 0.95rem;
-  line-height: 1.6;
+  color: #831843;
+  font-size: 1rem;
+  line-height: 1.7;
 }

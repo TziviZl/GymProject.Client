@@ -1,11 +1,11 @@
 .navbar {
-  background: linear-gradient(90deg, #1a1a1a, #222);
+  background: #000000;
   padding: 1rem 2rem;
   position: sticky;
   top: 0;
   z-index: 1000;
-  box-shadow: 0 4px 10px rgba(255, 145, 0, 0.2);
-  border-bottom: 1px solid #333;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid #333333;
 }
 
 .navbar ul {
@@ -20,29 +20,39 @@
 }
 
 .navbar li a,
-.navbar .logout-btn {
-  color: #fff;
+.navbar .logout-btn,
+.navbar .nav-btn {
+  color: #ffffff;
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 500;
   padding: 0.5rem 1rem;
   border-radius: 8px;
-  transition: all 0.3s ease-in-out;
-  font-size: 1.05rem;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  position: relative;
 }
 
 .navbar li a:hover,
-.navbar .logout-btn:hover {
-  background-color: #ff9100;
-  color: #000;
+.navbar .logout-btn:hover,
+.navbar .nav-btn:hover {
+  background-color: #333333;
+  color: #db1463;
   text-decoration: none;
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
-/* כפתור Logout */
-.logout-btn {
+/* כפתורים */
+.logout-btn,
+.nav-btn {
   background-color: transparent;
-  border: 1px solid #ff9100;
+  border: 1px solid #666666;
   cursor: pointer;
+}
+
+.logout-btn:hover,
+.nav-btn:hover {
+  border-color: #db1463;
+  background-color: #333333;
 }
 
 /* רספונסיביות לניידים */

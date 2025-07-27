@@ -5,6 +5,7 @@ import ToastMessage from '../../components/shared/ToastMessage';
 import { sendVerificationCode, verifyCode, getUserType } from '../../api/authApi';
 import { getGymnastById } from '../../api/gymnastApi';
 import { getTrainerById } from '../../api/trainerApi';
+import { ROUTES, USER_TYPES } from '../../utils/constants';
 import '../../css/Login.css';
 
 type UserType = 'gymnast' | 'trainer' | 'secretary';
@@ -38,23 +39,23 @@ export default function Login() {
       const typeRes = await getUserType(id);
       const userTypeRaw = typeRes.data?.toLowerCase().trim();
 
-      if (!userTypeRaw || !['gymnast', 'trainer', 'secretary'].includes(userTypeRaw)) {
+      if (!userTypeRaw || !Object.values(USER_TYPES).includes(userTypeRaw as any)) {
         setError('User not found. Please register.');
-        navigate('/Register', { state: { id } });
+        navigate(ROUTES.REGISTER, { state: { id } });
         return;
       }
 
       const userType = userTypeRaw as UserType;
       let user: any;
 
-      if (userType === 'gymnast') {
+      if (userType === USER_TYPES.GYMNAST) {
         const res = await getGymnastById(id);
         user = res.data;
-      } else if (userType === 'trainer') {
+      } else if (userType === USER_TYPES.TRAINER) {
         const res = await getTrainerById(id);
         user = res.data;
-      } else if (userType === 'secretary') {
-        user = { cell: phone }; // מזכירה – לא שומרת מידע בשרת, משתמשים במספר טלפון בלבד
+      } else if (userType === USER_TYPES.SECRETARY) {
+        user = { cell: phone };
       }
 
       if (!user) {
@@ -73,7 +74,7 @@ export default function Login() {
     } catch (err: any) {
       console.error('Login error:', err);
       if (err.response?.status === 404) {
-        navigate('/Register', { state: { id } });
+        navigate(ROUTES.REGISTER, { state: { id } });
       } else {
         setError('An error occurred. Please try again.');
       }
@@ -95,24 +96,23 @@ export default function Login() {
       const userTypeRaw = typeRes.data?.toLowerCase().trim();
       const userType = userTypeRaw as UserType;
 
-      if (!userType || !['gymnast', 'trainer', 'secretary'].includes(userType)) {
+      if (!userType || !Object.values(USER_TYPES).includes(userType as any)) {
         setError('Could not identify user type.');
         return;
       }
 
       login(id, userType);
 
-      // ניווט לפי סוג המשתמש
       switch (userType) {
-        case 'trainer':
-          navigate('/TrainerProfile');
+        case USER_TYPES.TRAINER:
+          navigate(ROUTES.TRAINER_PROFILE);
           break;
-        case 'secretary':
-          navigate('/SecretaryDashboard'); // ← תיקון
+        case USER_TYPES.SECRETARY:
+          navigate(ROUTES.LESSONS);
           break;
-        case 'gymnast':
+        case USER_TYPES.GYMNAST:
         default:
-          navigate('/MyProfile');
+          navigate(ROUTES.MY_PROFILE);
       }
     } catch (error) {
       console.error('Verification error:', error);

@@ -4,12 +4,12 @@
   align-items: center;
   justify-content: center;
   padding: 3rem;
-  color: #ff9100;
+  color: #db1463;
 }
 
 .loader {
-  border: 6px solid #444;
-  border-top: 6px solid #ff9100;
+  border: 6px solid #f9a8d4;
+  border-top: 6px solid #db1463;
   border-radius: 50%;
   width: 50px;
   height: 50px;
