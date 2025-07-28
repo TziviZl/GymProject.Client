@@ -20,9 +20,10 @@ export default function SecretaryTrainers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const { message, messageType, showMessage, showError } = useErrorHandler();
-  const [classesWithoutTrainer, setClassesWithoutTrainer] = useState<MViewStudioClass[] | null>(null);
+  const { message, messageType, showMessage } = useErrorHandler();
+
   const [trainerEmails, setTrainerEmails] = useState<string[] | null>(null);
+  const [classesWithoutTrainer, setClassesWithoutTrainer] = useState<MViewStudioClass[] | null>(null);
 
   const fetchTrainers = async () => {
     setLoading(true);
